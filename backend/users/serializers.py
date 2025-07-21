@@ -41,8 +41,8 @@ class UserRegistrationSerializer(serializers.Serializer):
 
 
 class ConfirmationCodeTokenSerializer(serializers.Serializer):
-    username = serializers.CharField(
-        max_length=NAME_MAX_LENGTH,
+    email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
         write_only=True
     )
     confirmation_code = serializers.CharField(
@@ -51,7 +51,7 @@ class ConfirmationCodeTokenSerializer(serializers.Serializer):
     )
 
     def validate(self, data):
-        user = get_object_or_404(User, username=data['username'])
+        user = get_object_or_404(User, email=data['email'])
         if user.confirmation_code != data['confirmation_code']:
             raise serializers.ValidationError(
                 'Неверный код подтверждения'

@@ -1,6 +1,10 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
+from django.contrib.auth.validators import UnicodeUsernameValidator
+from users.constants import CODE_MAX_LENGTH, NAME_MAX_LENGTH
+from .validators import validate_username
+from django.utils.translation import gettext_lazy as _
 
 
 def user_avatar_path(instance, filename):
@@ -8,6 +12,17 @@ def user_avatar_path(instance, filename):
 
 
 class User(AbstractUser):
+
+    confirmation_code = models.CharField(max_length=CODE_MAX_LENGTH,
+                                         blank=True, null=True)
+    username = models.CharField(
+        max_length=NAME_MAX_LENGTH,
+        unique=True,
+        validators=[UnicodeUsernameValidator(), validate_username],
+        error_messages={
+            "unique": _(" Такой пользователь уже существует."),
+        },
+    )
     email = models.EmailField(
         'Email',
         unique=True,

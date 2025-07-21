@@ -1,3 +1,4 @@
+# api/urls.py
 from django.urls import include, path
 from rest_framework.routers import DefaultRouter
 
@@ -12,10 +13,10 @@ router_v1.register('auth/signup', SignUpViewSet, basename='signup')
 
 urlpatterns = [
     path('', include('djoser.urls')),
-    path('', include('djoser.urls.authtoken')),
+    path('auth/', include('djoser.urls.authtoken')),
     path('', include(router_v1.urls)),
     path(
-        'auth/token/login',
+        'auth/token/login/',
         ConfirmationCodeTokenView.as_view(),
         name='confirmation_code_token'
     ),
