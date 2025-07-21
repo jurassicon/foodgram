@@ -11,9 +11,11 @@ router_v1.register('users', UserViewSet, basename='users')
 router_v1.register('auth/signup', SignUpViewSet, basename='signup')
 
 urlpatterns = [
-    path('v1/', include(router_v1.urls)),
+    path('', include('djoser.urls')),
+    path('', include('djoser.urls.authtoken')),
+    path('', include(router_v1.urls)),
     path(
-        'v1/auth/token/',
+        'auth/token/login',
         ConfirmationCodeTokenView.as_view(),
         name='confirmation_code_token'
     ),

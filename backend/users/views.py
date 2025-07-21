@@ -8,7 +8,6 @@ from .serializers import UserRegistrationSerializer, \
     ConfirmationCodeTokenSerializer, UserSerializer
 from rest_framework import serializers
 
-
 class UserViewSet(viewsets.ModelViewSet):
     queryset = User.objects.all()
     permission_classes = (

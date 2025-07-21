@@ -35,7 +35,7 @@ class UserRegistrationSerializer(serializers.Serializer):
                                                        email=email)
         except IntegrityError:
             raise serializers.ValidationError(
-                f'Пользователь с {username} занят')
+                f'Username: {username} уже занят')
         send_email_code(user)
         return user
 
