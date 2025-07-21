@@ -10,7 +10,5 @@ router.register('tags', TagViewSet, basename='tags')
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-    #path('api/users/', include('users.urls')),  # ← теперь ровно под /api/users/
-    #path('api/', include(router.urls)),         # /api/recipes/, /api/tags/ и т.д.
-    path('api/', include('users.urls')),
+    path('api/', include('api.urls')),
 ]
