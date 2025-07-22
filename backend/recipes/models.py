@@ -63,7 +63,7 @@ class Recipe(models.Model):
         help_text='Список объектов {"id": ингредиент, "amount": количество}'
     )
     tags = models.ManyToManyField(
-        Tag, verbose_name='Группа', related_name='recipes',
+        Tag, verbose_name='Тэги', related_name='tag',
         help_text='Список ID тегов'
     )
     cooking_time = models.PositiveIntegerField(

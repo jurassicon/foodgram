@@ -13,8 +13,7 @@ def user_avatar_path(instance, filename):
 
 class User(AbstractUser):
 
-    confirmation_code = models.CharField(max_length=CODE_MAX_LENGTH,
-                                         blank=True, null=True)
+
     username = models.CharField(
         max_length=NAME_MAX_LENGTH,
         unique=True,
@@ -37,6 +36,9 @@ class User(AbstractUser):
         blank=True,
         help_text='Ссылка на аватар (URI)',
     )
+
+    USERNAME_FIELD = 'email'
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name']
 
     class Meta:
         verbose_name = 'пользователь'
