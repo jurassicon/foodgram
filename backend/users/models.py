@@ -13,7 +13,6 @@ def user_avatar_path(instance, filename):
 
 class User(AbstractUser):
 
-
     username = models.CharField(
         max_length=NAME_MAX_LENGTH,
         unique=True,
@@ -30,8 +29,7 @@ class User(AbstractUser):
     )
     avatar = models.ImageField(
         'Аватар',
-        upload_to='avatars/',
-        default='avatars/default.png',
+        upload_to='users',
         null=True,
         blank=True,
         help_text='Ссылка на аватар (URI)',
