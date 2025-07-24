@@ -1,8 +1,16 @@
+from django.core.exceptions import ValidationError
+from sqids import Sqids
+from datetime import datetime
+
 from django.contrib.auth import get_user_model
 from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import UniqueConstraint
 from django.utils.text import slugify
+
+
+User = get_user_model()
 
 
 def get_short_string(input_string, length=40, suffix='...'):
@@ -41,7 +49,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        get_user_model(),
+        User,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор'
@@ -71,14 +79,35 @@ class Recipe(models.Model):
         validators=[MinValueValidator(1)],
         help_text='Добавьте время приготовления в минутах',
     )
+    pub_date = models.DateTimeField(
+        'Дата публикации', auto_now_add=True
+    )
 
     class Meta:
         default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
+        ordering = ('-pub_date',)
+
+    def __init__(self, *args, **kwargs):
+        super().__init__(*args, **kwargs)
+        self.short_url = None
 
     def __str__(self):
         return get_short_string(self.name)
+
+    def save(self, *args, **kwargs):
+        if not self.short_url:
+            today = datetime.today()
+            keys_for_short_url = [
+                round(today.timestamp() * 1000),
+                self.author.id,
+                self.cooking_time
+            ]
+            sqids = Sqids()
+            code = sqids.encode(keys_for_short_url)
+            self.short_url = code
+        return super(Recipe, self).save(*args, **kwargs)
 
 
 class Ingredient(models.Model):
@@ -96,6 +125,12 @@ class Ingredient(models.Model):
         default_related_name = 'ingredients'
         verbose_name = 'Ингредиент'
         verbose_name_plural = 'Ингредиенты'
+        constraints = (
+            UniqueConstraint(
+                fields=('name', 'measurement_unit'),
+                name='unique_name_&_measurement_unit',
+            ),
+        )
 
     def __str__(self):
         return get_short_string(self.name)
@@ -122,3 +157,64 @@ class RecipeIngredient(models.Model):
     def __str__(self):
         return (f'{self.ingredient.name}: {self.amount} '
                 f'{self.ingredient.measurement_unit}')
+
+
+class FavouritesAndShoppingList(models.Model):
+
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
+
+    class Meta:
+        abstract = True
+
+
+class Favourites(FavouritesAndShoppingList):
+
+    class Meta:
+        verbose_name = 'Избранное'
+        verbose_name_plural = 'Избранное'
+        default_related_name = 'favorites'
+        constraints = (
+            UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_and_recipe_in_Favourites',
+            ),
+        )
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} в избранном у {self.user.username}'
+
+    def clean(self):
+        if Favourites.objects.filter(
+            user=self.user,
+            recipe=self.recipe
+        ).exists():
+            raise ValidationError({
+                'recipe': 'Рецепт уже в избранном.'
+            })
+
+
+class ShoppingList(FavouritesAndShoppingList):
+
+    class Meta:
+        verbose_name = 'Корзина'
+        verbose_name_plural = 'Корзина'
+        default_related_name = 'shopping_recipe'
+        constraints = (
+            UniqueConstraint(
+                fields=('user', 'recipe'),
+                name='unique_user_and_recipe_in_ShoppingList',
+            ),
+        )
+
+    def __str__(self):
+        return f'Рецепт {self.recipe} в списке покупок {self.user.username}'
+
+    def clean(self):
+        if ShoppingList.objects.filter(
+            user=self.user,
+            recipe=self.recipe
+        ).exists():
+            raise ValidationError({
+                'recipe': 'Рецепт уже в списке покупок.'
+            })
