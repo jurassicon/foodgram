@@ -17,6 +17,8 @@ numpy==2.3.1
 oauthlib==3.3.1
 pandas==2.3.1
 pillow==11.3.0
+psycopg2==2.9.10
+psycopg2-binary==2.9.10
 pycparser==2.22
 PyJWT==2.9.0
 python-dateutil==2.9.0.post0
@@ -27,7 +29,7 @@ requests-oauthlib==2.0.0
 six==1.17.0
 social-auth-app-django==5.5.1
 social-auth-core==4.7.0
+sqids==0.5.2
 sqlparse==0.5.3
 tzdata==2025.2
 urllib3==2.5.0
-psycopg2
