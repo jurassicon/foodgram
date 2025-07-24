@@ -1,25 +1,47 @@
+from djoser.views import UserViewSet
 from rest_framework import (
     viewsets, permissions, status)
 from rest_framework.decorators import action
-from rest_framework.response import Response
 from rest_framework.parsers import MultiPartParser
+from rest_framework.permissions import IsAuthenticated
+from rest_framework.response import Response
+
 from .models import User
-from .permissions import IsSupervisionOrAdmin
-from .serializers import UserRegistrationSerializer, UserSerializer, AvatarSerializer
+from .serializers import UserRegistrationSerializer, UserSerializer, \
+    AvatarSerializer
 
 
-class UserViewSet(viewsets.ModelViewSet):
-    queryset = User.objects.all()
-    permission_classes = (
-        permissions.IsAuthenticated,
-        IsSupervisionOrAdmin,
-    )
-    lookup_field = 'username'
-
-    search_fields = ('username',)
-    http_method_names = ['get', 'post', 'put',
-                         'patch', 'delete']
+class CustomUserViewSet(UserViewSet):
+    pagination_class = None
     serializer_class = UserSerializer
+    queryset = User.objects.all()
+
+    @action(
+        detail=False,
+        methods=['put', 'DELETE', ],
+        url_path='me/avatar',
+        permission_classes=[IsAuthenticated, ],
+        parser_classes=[MultiPartParser],
+    )
+    def avatar(self, request):
+        """
+        GET  /api/users/me/avatar/ — вернуть URL текущего аватара
+        PUT  /api/users/me/avatar/ — загрузить новый аватар
+        """
+        if request.method == 'PUT':
+            serializer = AvatarSerializer(
+                self.request.user,
+                data=request.data,
+                partial=True
+            )
+            serializer.is_valid(raise_exception=True)
+            serializer.save()
+            return Response(serializer.data, status=status.HTTP_200_OK)
+
+        # GET
+        self.request.user.avatar = None
+        self.request.user.save()
+        return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
         detail=False,
@@ -36,26 +58,6 @@ class UserViewSet(viewsets.ModelViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = self.get_serializer(user, many=False)
-        return Response(serializer.data, status=status.HTTP_200_OK)
-
-    @action(
-        detail=False,
-        methods=['put'],
-        url_path='me/avatar',
-        permission_classes=[permissions.IsAuthenticated, ],
-        parser_classes=[MultiPartParser],
-    )
-    def avatar(self, request):
-        """
-        PUT /api/users/me/avatar/ — загрузить новый аватар
-        """
-        serializer = AvatarSerializer(
-            request.user,
-            data=request.data,
-            partial=True
-        )
-        serializer.is_valid(raise_exception=True)
-        serializer.save()
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
