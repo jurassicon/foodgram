@@ -5,10 +5,11 @@ from rest_framework import viewsets
 from rest_framework.decorators import action
 from rest_framework.filters import SearchFilter
 from rest_framework.generics import get_object_or_404
-from rest_framework.permissions import AllowAny, IsAuthenticated
+from rest_framework.permissions import AllowAny, IsAuthenticated, \
+    IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
 
-from api.filters import RecipeFilter
+from api.filters import RecipeFilter, IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
 from recipes.models import Ingredient, Recipe, Tag, RecipeIngredient, \
     ShoppingList, Favourites
@@ -87,13 +88,26 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return self.__delete_obj_recipes(request, Favourites, pk)
 
+    def create(self, request, *args, **kwargs):
+        # 1) валидируем и сохраняем через write-сериализатор
+        write_serializer = self.get_serializer(data=request.data)
+        write_serializer.is_valid(raise_exception=True)
+        recipe = write_serializer.save()  # здесь HiddenField CurrentUserDefault уже подставил author
+
+        # 2) «пересериализуем» только что созданный объект через detail-сериализатор
+        read_serializer = RecipeDetailSerializer(
+            recipe,
+            context=self.get_serializer_context()
+        )
+        return Response(read_serializer.data, status=status.HTTP_201_CREATED)
+
 
 class IngredientViewSet(viewsets.ModelViewSet):
-    permission_classes = (IsAuthorOrReadOnly,)
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
-    filter_backends = (SearchFilter,)
-    search_fields = ('^name',)
+    permission_classes = (IsAuthenticatedOrReadOnly,)  # теперь GET разрешён всем
+    filter_backends = (DjangoFilterBackend,)
+    filterset_class = IngredientFilter
 
 
 class TagViewSet(viewsets.ModelViewSet):
