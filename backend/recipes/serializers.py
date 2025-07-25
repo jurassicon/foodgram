@@ -9,6 +9,7 @@ from rest_framework import serializers
 from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient, \
     Favourites, ShoppingList
 from users.models import Follow
+from users.serializers import UserSerializer
 
 User = get_user_model()
 
@@ -61,6 +62,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     author = serializers.HiddenField(
         default=serializers.CurrentUserDefault()
     )
+    author_username = serializers.ReadOnlyField(source='author.username')
     # вложенные ингредиенты: и чтение, и запись
     ingredients = IngredientAmountSerializer(
         many=True,
@@ -75,7 +77,7 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     class Meta:
         model = Recipe
         fields = (
-            'id', 'author', 'name', 'text', 'image',
+            'id', 'author', 'name', 'author_username', 'text', 'image',
             'tags', 'ingredients', 'cooking_time',
         )
 
@@ -83,7 +85,6 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         ingredients_data = validated_data.pop('recipe_ingredients', [])
         tags_data = validated_data.pop('tags', [])
         author = validated_data.pop('author')
-
         recipe = Recipe.objects.create(author=author, **validated_data)
         recipe.tags.set(tags_data)
 
@@ -124,9 +125,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
         source='recipe_ingredients'
     )
     tags = TagSerializer(many=True, read_only=True)
-    author = serializers.SlugRelatedField(
-        read_only=True, slug_field='username'
-    )
+    author = UserSerializer(read_only=True)
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
@@ -166,7 +165,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
 
 
 class IngredientSerializer(serializers.ModelSerializer):
-    name = serializers.ReadOnlyField(source='name')
+    #name = serializers.ReadOnlyField(source='name')
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
