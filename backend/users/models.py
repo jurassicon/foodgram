@@ -2,6 +2,8 @@ from django.conf import settings
 from django.contrib.auth.models import AbstractUser
 from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
+from rest_framework import serializers
+
 from users.constants import CODE_MAX_LENGTH, NAME_MAX_LENGTH
 from .validators import validate_username
 from django.utils.translation import gettext_lazy as _
@@ -12,7 +14,6 @@ def user_avatar_path(instance, filename):
 
 
 class User(AbstractUser):
-
     username = models.CharField(
         max_length=NAME_MAX_LENGTH,
         unique=True,
