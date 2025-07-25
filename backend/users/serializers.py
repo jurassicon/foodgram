@@ -8,7 +8,7 @@ from rest_framework_simplejwt.tokens import AccessToken
 from drf_extra_fields.fields import Base64ImageField
 from users.validators import validate_username
 from .constants import CODE_MAX_LENGTH, EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
-from .models import User
+from .models import User, Follow
 from .utils import send_email_code
 
 
@@ -29,10 +29,25 @@ class AvatarSerializer(serializers.ModelSerializer):
 
 
 class UserSerializer(serializers.ModelSerializer):
+    avatar = serializers.ImageField(read_only=True)
+    is_subscribed = serializers.SerializerMethodField()
+
     class Meta:
         model = User
-        fields = ('username','email','first_name','last_name','avatar')
+        fields = ('username', 'id', 'email','first_name','last_name', 'is_subscribed', 'avatar')
         read_only_fields = ('username','email')
+
+    def get_is_subscribed(self, obj):
+        """
+        Вернёт True, если текущий пользователь (из context) подписан на пользователя obj.
+        """
+        request = self.context.get('request')
+        if not request or request.user.is_anonymous:
+            return False
+        return Follow.objects.filter(
+            user=request.user,
+            following=obj
+        ).exists()
 
 
 class UserRegistrationSerializer(serializers.Serializer):
