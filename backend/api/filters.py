@@ -1,9 +1,22 @@
+import django_filters
 from django.contrib.auth import get_user_model
 from django_filters.rest_framework import FilterSet, filters
 
+from recipes.models import Ingredient
 from recipes.models import Recipe, Tag
 
 User = get_user_model()
+
+
+class IngredientFilter(django_filters.FilterSet):
+    name = django_filters.CharFilter(
+        field_name='name',
+        lookup_expr='icontains'  # или 'istartswith' по вкусу
+    )
+
+    class Meta:
+        model = Ingredient
+        fields = ('name',)
 
 
 class RecipeFilter(FilterSet):
