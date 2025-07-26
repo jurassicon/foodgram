@@ -4,8 +4,14 @@ from django.conf.urls.static import static
 from django.contrib import admin
 from django.urls import include, path
 
+from users.views import CustomUserViewSet
+
 urlpatterns = [
     path('admin/', admin.site.urls),
+    path('auth/', include('djoser.urls')),
+    path('users/subscriptions/',
+         CustomUserViewSet.as_view({'get': 'subscriptions'}),
+         name='user-subscriptions'),
     path('api/', include('api.urls')),
 ]
 
