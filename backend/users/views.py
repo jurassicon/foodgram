@@ -1,4 +1,5 @@
 from django.shortcuts import get_object_or_404
+from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework import (
@@ -19,11 +20,10 @@ class CustomUserViewSet(UserViewSet):
     queryset = User.objects.all()
 
     def get_serializer_class(self):
-        # когда вызывается /api/users/subscriptions/ или /api/users/{pk}/subscribe/
-        # — отдаём расширенный сериализатор с рецептами
+        if self.action == 'set_password':
+            return SetPasswordSerializer
         if self.action in ('retrieve', 'subscriptions', 'subscribe'):
             return UserWithRecipesSerializer
-        # иначе — обычный
         return UserSerializer
 
     @action(
@@ -58,7 +58,6 @@ class CustomUserViewSet(UserViewSet):
             user.save()
             return Response(status=status.HTTP_204_NO_CONTENT)
 
-            # на всякий случай, если придёт HEAD или другой метод:
         return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
     @action(
@@ -96,7 +95,6 @@ class CustomUserViewSet(UserViewSet):
                                                        following=author).exists():
                 return Response({'detail': 'Ошибка подписки'}, status=400)
             Follow.objects.create(user=user, following=author)
-            # возвращаем подробный профиль автора сразу же с его рецептами
             serializer = self.get_serializer(author,
                                              context={'request': request})
             return Response(serializer.data, status=201)
@@ -109,23 +107,22 @@ class CustomUserViewSet(UserViewSet):
         return Response(status=204)
 
     @action(
-        detail=False,
-        methods=['GET'],
+        detail=False, methods=['GET'],
         url_path='subscriptions',
         permission_classes=[IsAuthenticated],
-        pagination_class=None,  # убираем DRF-пагинацию
     )
     def subscriptions(self, request):
-        """
-        GET /api/users/subscriptions/ — мои подписки, сразу список UserWithRecipes
-        """
         user = request.user
-        follows = Follow.objects.filter(user=user) \
-            .values_list('following', flat=True)
+        follows = Follow.objects.filter(user=user).values_list('following',
+                                                               flat=True)
         qs = User.objects.filter(pk__in=follows)
-        serializer = UserWithRecipesSerializer(
-            qs, many=True, context={'request': request}
-        )
+        page = self.paginate_queryset(qs)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True,
+                                             context={'request': request})
+            return self.get_paginated_response(serializer.data)
+        serializer = self.get_serializer(qs, many=True,
+                                         context={'request': request})
         return Response(serializer.data)
 
 
