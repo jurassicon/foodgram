@@ -80,13 +80,11 @@ class UserRegistrationSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         password = validated_data.pop('password')
-        # создаём экземпляр, не сохраняя пока в БД
         user = User(**validated_data)
         user.set_password(password)
         try:
             user.save()
         except IntegrityError:
-            # ловим нарушение unique=True на username или email
             raise serializers.ValidationError({
                 'username': f'Пользователь с именем "{validated_data.get("username")}" уже существует.',
                 'email': f'Email "{validated_data.get("email")}" уже занят.',
@@ -105,7 +103,6 @@ class RecipeMinifiedSerializer(serializers.ModelSerializer):
 
 
 class UserWithRecipesSerializer(serializers.ModelSerializer):
-    # досигает UserWithRecipes из OpenAPI: сюда попадают рецепты
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
     is_subscribed = serializers.SerializerMethodField()
@@ -144,7 +141,6 @@ class UserWithRecipesSerializer(serializers.ModelSerializer):
         limit = self.context['request'].query_params.get('recipes_limit')
         if limit is not None and limit.isdigit():
             qs = qs[:int(limit)]
-        # Minified-сериализатор отдаёт только id, name, image, cooking_time
         return RecipeMinifiedSerializer(qs, many=True, context=self.context).data
 
     def get_recipes_count(self, obj):
