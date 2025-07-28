@@ -169,6 +169,16 @@ class FavouritesAndShoppingList(models.Model):
 
 
 class Favourites(FavouritesAndShoppingList):
+    user = models.ForeignKey(
+        User,
+        on_delete=models.CASCADE,
+        related_name='favourites'
+    )
+    recipe = models.ForeignKey(
+        Recipe,
+        on_delete=models.CASCADE,
+        related_name='favorites'
+    )
 
     class Meta:
         verbose_name = 'Избранное'
