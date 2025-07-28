@@ -4,6 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import IntegrityError
 from drf_extra_fields.fields import Base64ImageField
 from rest_framework import serializers
+from rest_framework.validators import UniqueValidator
 
 from recipes.models import Recipe
 from users.validators import validate_username
@@ -29,22 +30,14 @@ class AvatarSerializer(serializers.ModelSerializer):
 class UserSerializer(serializers.ModelSerializer):
     avatar = serializers.ImageField(read_only=True)
     is_subscribed = serializers.SerializerMethodField()
-    subscriptions = serializers.SerializerMethodField()
 
     class Meta:
         model = User
         fields = ('username', 'id', 'email', 'first_name', 'last_name',
-                  'is_subscribed', 'avatar', 'subscriptions')
+                  'is_subscribed', 'avatar',)
         read_only_fields = ('username', 'email')
 
-    def get_subscriptions(self, obj):
-        # на кого подписан пользователь obj
-        follows = Follow.objects.filter(user=obj) \
-            .values_list('following', flat=True)
-        users = User.objects.filter(pk__in=follows)
-        # вложенный сериализатор (только базовые поля, без рекурсии)
-        return UserSerializer(users, many=True,
-                              context=self.context).data
+
 
     def get_is_subscribed(self, obj):
         """
@@ -59,29 +52,46 @@ class UserSerializer(serializers.ModelSerializer):
         ).exists()
 
 
-class UserRegistrationSerializer(serializers.Serializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
+    id = serializers.IntegerField(read_only=True)
     password = serializers.CharField(
         write_only=True,
         validators=[validate_password]
     )
 
-    username = serializers.CharField(max_length=NAME_MAX_LENGTH,
-                                     validators=[UnicodeUsernameValidator(),
-                                                 validate_username], )
-    email = serializers.EmailField(
-        max_length=EMAIL_MAX_LENGTH,
+    username = serializers.CharField(
+        max_length=NAME_MAX_LENGTH,
+        validators=[UnicodeUsernameValidator(),validate_username],
+        required=True,
+        allow_blank=False,
     )
-    first_name = serializers.CharField(required=False, allow_blank=True)
-    last_name = serializers.CharField(required=False, allow_blank=True)
+    email = serializers.EmailField(
+        validators=[
+            UniqueValidator(
+                queryset=User.objects.all(),
+                message="Пользователь с таким email уже зарегистрирован."
+            )
+        ],
+        required=True,
+        allow_blank=False,
+    )
+    first_name = serializers.CharField(
+        required=True, allow_blank=False, max_length=NAME_MAX_LENGTH
+    )
+    last_name = serializers.CharField(
+        required=True, allow_blank=False,  max_length=NAME_MAX_LENGTH
+    )
 
     class Meta:
         model = User
-        fields = ('email', 'username', 'first_name', 'last_name', 'password')
+        fields = ('email', 'id', 'username', 'first_name', 'last_name', 'password')
+
 
     def create(self, validated_data):
         password = validated_data.pop('password')
         user = User(**validated_data)
         user.set_password(password)
+        print("Validated_data at create:", validated_data)
         try:
             user.save()
         except IntegrityError:
@@ -90,6 +100,14 @@ class UserRegistrationSerializer(serializers.Serializer):
                 'email': f'Email "{validated_data.get("email")}" уже занят.',
             })
         return user
+
+
+class UserListSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = User
+        fields = ('email', 'id', 'username', 'first_name', 'last_name')
+
+
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
     class Meta:
