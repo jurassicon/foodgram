@@ -80,13 +80,19 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
             'tags', 'ingredients', 'cooking_time',
         )
 
-    def validate_recipe_ingredients(self, value):
-        for item in value:
-            if item.get('amount', 0) < 1:
-                raise serializers.ValidationError(
-                    'Количество ингредиента должно быть не менее 1'
-                )
-        return value
+    def validate(self, attrs):
+        """
+        Проверяем, что в списке recipe_ingredients нет повторяющихся ингредиентов.
+        """
+        ingredients = attrs.get('recipe_ingredients', [])
+        # Собираем id всех ингредиентов из входных данных
+        ingredient_ids = [item['ingredient'].id for item in ingredients]
+        # Если длина списка не совпадает с длиной множества — есть дубли
+        if len(ingredient_ids) != len(set(ingredient_ids)):
+            raise serializers.ValidationError(
+                "Ингредиенты должны быть уникальными в рамках одного рецепта."
+            )
+        return attrs
 
     def create(self, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients', [])
