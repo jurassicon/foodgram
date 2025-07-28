@@ -131,8 +131,8 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.TokenAuthentication',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'recipes.pagination.CustomPagination',
-
+    'DEFAULT_PAGINATION_CLASS': 'recipes.pagination.CustomUserPagination',
+    'PAGE_SIZE': 6,
 }
 
 DJOSER = {
@@ -145,8 +145,8 @@ DJOSER = {
     'PERMISSIONS': {
         'user_create':   ['rest_framework.permissions.AllowAny'],
         'token_create':  ['rest_framework.permissions.AllowAny'],
-        'user':          ['rest_framework.permissions.IsAuthenticated'],
-        'user_list':     ['djoser.permissions.CurrentUserOrAdmin'],
+        'user':          ['rest_framework.permissions.AllowAny'],
+        'user_list':     ['rest_framework.permissions.AllowAny'],
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
     },
 }
