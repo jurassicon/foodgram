@@ -32,6 +32,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeWriteSerializer
+        if self.action == 'list':
+            return RecipeListSerializer
         return RecipeDetailSerializer
 
     def get_serializer_context(self):
@@ -112,17 +114,17 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
         # 2. Сохраняем новый рецепт и связанные объекты
         recipe = write_serializer.save()
-
-        # 3. Готовим ответ через RecipeListSerializer
-        list_serializer = RecipeListSerializer(
+        read_ser = RecipeDetailSerializer(
             recipe,
             context=self.get_serializer_context()
         )
+        # 3. Готовим ответ через RecipeListSerializer
+        #list_serializer = RecipeListSerializer(
+        #    recipe,
+        #    context=self.get_serializer_context()
+        #)
 
-        return Response(
-            list_serializer.data,
-            status=status.HTTP_201_CREATED
-        )
+        return Response(read_ser.data, status=status.HTTP_201_CREATED)
 
 
 class IngredientViewSet(ModelViewSet):
