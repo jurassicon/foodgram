@@ -216,13 +216,17 @@ class RecipeListSerializer(serializers.ModelSerializer):
             'cooking_time',
         )
 
-    def is_favorited(self, obj):
+    def get_is_favorited(self, obj):
         user = self.context['request'].user
-        return not user.is_anonymous and Favourites.objects.filter(user=user, recipe=obj).exists()
+        return not user.is_anonymous and Favourites.objects.filter(
+            user=user, recipe=obj
+        ).exists()
 
-    def is_in_shopping_cart(self, obj):
+    def get_is_in_shopping_cart(self, obj):
         user = self.context['request'].user
-        return not user.is_anonymous and ShoppingList.objects.filter(user=user, recipe=obj).exists()
+        return not user.is_anonymous and ShoppingList.objects.filter(
+            user=user, recipe=obj
+        ).exists()
 
 
 
