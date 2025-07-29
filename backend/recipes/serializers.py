@@ -86,7 +86,11 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
         """
         ingredients = attrs.get('recipe_ingredients', [])
         # Собираем id всех ингредиентов из входных данных
-        ingredient_ids = [item['ingredient'].id for item in ingredients]
+        if not ingredients:
+            raise serializers.ValidationError('Ингридент объязательное поле!')
+        else:
+            ingredient_ids = [item['ingredient'].id for item in ingredients]
+
         # Если длина списка не совпадает с длиной множества — есть дубли
         if len(ingredient_ids) != len(set(ingredient_ids)):
             raise serializers.ValidationError(
