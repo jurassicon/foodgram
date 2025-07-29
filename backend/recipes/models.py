@@ -82,6 +82,16 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
+    is_favorited = models.BooleanField(
+        default=False,
+        verbose_name='В избранном',
+        help_text='Показывает, добавлен ли рецепт в избранное'
+    )
+    is_in_shopping_cart = models.BooleanField(
+        default=False,
+        verbose_name='В корзине',
+        help_text='Показывает, добавлен ли рецепт в корзину'
+    )
 
     class Meta:
         default_related_name = 'recipes'
