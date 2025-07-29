@@ -255,7 +255,16 @@ class ShoppingListSerializer(serializers.ModelSerializer):
     recipe = serializers.PrimaryKeyRelatedField(
         queryset=Recipe.objects.all()
     )
+    images = serializers.SerializerMethodField()
+    name = serializers.SerializerMethodField()
+    cooking_time = serializers.SerializerMethodField()
 
     class Meta:
         model = ShoppingList
-        fields = ('user', 'recipe')
+        fields = ('user', 'recipe', 'name', 'images', 'cooking_time')
+
+
+class RecipeMinifiedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Recipe
+        fields = ('id', 'name', 'image', 'cooking_time')
