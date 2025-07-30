@@ -1,6 +1,7 @@
 from rest_framework.pagination import PageNumberPagination
 from rest_framework.response import Response
 
+
 class CustomUserPagination(PageNumberPagination):
     page_size_query_param = 'limit'
     page_query_param = 'page'
