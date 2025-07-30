@@ -46,24 +46,14 @@ class RecipeFilter(filters.FilterSet):
         return queryset
 
     def filter_in_shopping_list(self, queryset, name, value):
-        # если не нужно фильтровать — отдаём всё
         if not value:
             return queryset
-
         user = self.request.user
-        # если не авторизован — по логике можешь вернуть пусто или все,
-        # здесь выбираю пусто, чтобы было очевидно
         if not user.is_authenticated:
             return queryset.none()
 
-        # получаем все recipe_id, что в списке покупок у текущего пользователя
         recipe_ids = ShoppingList.objects.filter(
             user=user
         ).values_list('recipe_id', flat=True)
 
-        # DEBUG: чтобы увидеть в консоли, что именно мы отфильтровали,
-        # можешь временно раскомментировать:
-        # print('shopping_cart filter, user=', user, 'ids=', list(recipe_ids))
-
-        # и отфильтровываем
         return queryset.filter(id__in=recipe_ids)
