@@ -81,11 +81,12 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
     and backend configurations.
     """
 
-    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     queryset = Recipe.objects.all().order_by('id')
+    permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     pagination_class = CustomUserPagination
     filterset_class = RecipeFilter
     filter_backends = [DjangoFilterBackend]
+
     relation_model = ShoppingList
     serializer_class = RecipeMinifiedSerializer
 
@@ -96,60 +97,45 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
             return RecipeListSerializer
         return RecipeDetailSerializer
 
+    def create(self, request, *args, **kwargs):
+        write_ser = self.get_serializer(data=request.data)
+        write_ser.is_valid(raise_exception=True)
+        recipe = write_ser.save()
+        read_ser = RecipeDetailSerializer(
+            recipe,context=self.get_serializer_context()
+        )
+        return Response(read_ser.data, status=status.HTTP_201_CREATED)
 
     def update(self, request, *args, **kwargs):
-        response = super().update(request, *args, **kwargs)
-        recipe = self.get_object()
-        detail_ser = RecipeDetailSerializer(
-            recipe,
-            context=self.get_serializer_context()
+        partial = kwargs.pop('partial', False)
+        instance = self.get_object()
+        write_ser = self.get_serializer(
+            instance, data=request.data, partial=partial
         )
-        response.data = detail_ser.data
-        return response
+        write_ser.is_valid(raise_exception=True)
+        recipe = write_ser.save()
+        read_ser = RecipeDetailSerializer(
+            recipe, context=self.get_serializer_context()
+        )
+        return Response(read_ser.data)
 
-    partial_update = update
-
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        url_path='shopping_cart',
-        permission_classes=[IsAuthenticated],
-    )
+    @action(detail=True, methods=['post', 'delete'], url_path='shopping_cart',
+            permission_classes=[IsAuthenticated])
     def shopping_cart(self, request, pk=None):
         if request.method == 'POST':
             return self._add_relation(request, pk)
         return self._remove_relation(request, pk)
 
-    # Переопределяем атрибуты миксина для избранного
-    @property
-    def _favorite_relation_model(self):
-        return Favourites
-
-    @property
-    def _favorite_serializer_class(self):
-        return RecipeMinifiedSerializer
-
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        url_path='favorite',
-        permission_classes=[IsAuthenticated],
-    )
+    @action(detail=True, methods=['post', 'delete'], url_path='favorite',
+            permission_classes=[IsAuthenticated])
     def favorite(self, request, pk=None):
-        # временно подменяем relation_model и serializer_class
-        orig_model = self.relation_model
-        orig_serializer = self.serializer_class
-        self.relation_model = self._favorite_relation_model
-        self.serializer_class = self._favorite_serializer_class
-
-        if request.method == 'POST':
-            resp = self._add_relation(request, pk)
-        else:
-            resp = self._remove_relation(request, pk)
-
-        # восстанавливаем
-        self.relation_model = orig_model
-        self.serializer_class = orig_serializer
+        # временно меняем миксин на Favourites
+        orig_model, orig_ser = self.relation_model, self.serializer_class
+        self.relation_model, self.serializer_class = (Favourites,
+                                                      RecipeMinifiedSerializer)
+        resp = self._add_relation(request,pk) if request.method == 'POST' \
+            else self._remove_relation(request, pk)
+        self.relation_model, self.serializer_class = orig_model, orig_ser
         return resp
 
     @action(
@@ -188,20 +174,16 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
 
 
 
-    def create(self, request, *args, **kwargs):
-        write_serializer = self.get_serializer(data=request.data)
-        write_serializer.is_valid(raise_exception=True)
-
-        recipe = write_serializer.save()
-        read_ser = RecipeDetailSerializer(
-            recipe,
-            context=self.get_serializer_context()
-        )
-
-        return Response(read_ser.data, status=status.HTTP_201_CREATED)
-
-
 class IngredientViewSet(ModelViewSet):
+    """
+    Manages the interaction with the Ingredient resources.
+
+    This class provides a viewset for interacting with the Ingredient model. It
+    implements basic filtering and permissions, and it disables specific HTTP
+    methods (create, update, partial_update, and destroy). This ensures that the
+    Ingredient resources are immutable from client interactions through these
+    methods.
+    """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
     authentication_classes = ()
