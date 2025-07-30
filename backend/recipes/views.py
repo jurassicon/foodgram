@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum, F
+from django.db.models import Sum, F, Model
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
@@ -24,7 +24,51 @@ from recipes.serializers import IngredientSerializer, \
 User = get_user_model()
 
 
-class RecipeViewSet(viewsets.ModelViewSet):
+class AddRemoveMixin:
+    """
+    Mixin class providing utility methods for managing relationships between
+    users and predefined recipes. This class is intended to simplify adding
+    and removing relationships such as favorites or likes using methods that
+    operate on relational models.
+
+    It assumes the presence of a specified relational model `relation_model`
+    and serializer class to handle related operations consistently.
+    These attributes must be defined in subclasses for the mixin to
+    function correctly.
+    """
+
+    relation_model = None
+    serializer_class = None
+
+    def _add_relation(self, request, pk):
+        recipe = get_object_or_404(self.queryset.model, pk=pk)
+        _, created = self.relation_model.objects.get_or_create(
+            user=request.user, recipe=recipe
+        )
+        if not created:
+            return Response(
+                {'detail': 'Уже добавлено'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        serializer = self.serializer_class(
+            recipe, context=self.get_serializer_context()
+        )
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+    def _remove_relation(self, request, pk):
+        recipe = get_object_or_404(self.queryset.model, pk=pk)
+        deleted, _ = self.relation_model.objects.filter(
+            user=request.user, recipe=recipe
+        ).delete()
+        if not deleted:
+            return Response(
+                {'detail': 'Не было добавлено'},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+        return Response(status=status.HTTP_204_NO_CONTENT)
+
+
+class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
     """
     A view set for managing recipes in the system.
 
@@ -42,6 +86,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
     pagination_class = CustomUserPagination
     filterset_class = RecipeFilter
     filter_backends = [DjangoFilterBackend]
+    relation_model = ShoppingList
+    serializer_class = RecipeMinifiedSerializer
 
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
@@ -70,34 +116,41 @@ class RecipeViewSet(viewsets.ModelViewSet):
         permission_classes=[IsAuthenticated],
     )
     def shopping_cart(self, request, pk=None):
-        """
-        POST   /api/recipes/{pk}/shopping_cart/
-        DELETE /api/recipes/{pk}/shopping_cart/
-        """
-        recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
-            _, created = ShoppingList.objects.get_or_create(
-                user=request.user, recipe=recipe
-            )
-            if not created:
-                return Response(
-                    {'detail': 'Рецепт уже в корзине'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            serializer = RecipeMinifiedSerializer(
-                recipe, context=self.get_serializer_context()
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
+            return self._add_relation(request, pk)
+        return self._remove_relation(request, pk)
 
-        deleted, _ = ShoppingList.objects.filter(
-            user=request.user, recipe=recipe
-        ).delete()
-        if not deleted:
-            return Response(
-                {'detail': 'Рецепт не был в корзине'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+    # Переопределяем атрибуты миксина для избранного
+    @property
+    def _favorite_relation_model(self):
+        return Favourites
+
+    @property
+    def _favorite_serializer_class(self):
+        return RecipeMinifiedSerializer
+
+    @action(
+        detail=True,
+        methods=['post', 'delete'],
+        url_path='favorite',
+        permission_classes=[IsAuthenticated],
+    )
+    def favorite(self, request, pk=None):
+        # временно подменяем relation_model и serializer_class
+        orig_model = self.relation_model
+        orig_serializer = self.serializer_class
+        self.relation_model = self._favorite_relation_model
+        self.serializer_class = self._favorite_serializer_class
+
+        if request.method == 'POST':
+            resp = self._add_relation(request, pk)
+        else:
+            resp = self._remove_relation(request, pk)
+
+        # восстанавливаем
+        self.relation_model = orig_model
+        self.serializer_class = orig_serializer
+        return resp
 
     @action(
         detail=False,
@@ -133,44 +186,7 @@ class RecipeViewSet(viewsets.ModelViewSet):
         full_url = request.build_absolute_uri(relative)
         return Response({'short-link': full_url}, status=status.HTTP_200_OK)
 
-    @action(
-        detail=True,
-        methods=['post', 'delete'],
-        url_path='favorite',
-        url_name='favorite',
-        permission_classes=[IsAuthenticated],
-    )
-    def favorite(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
 
-        if request.method == 'POST':
-            _, created = Favourites.objects.get_or_create(
-                user=request.user, recipe=recipe
-            )
-            if not created:
-                return Response(
-                    {'detail': 'Рецепт уже в избранном'},
-                    status=status.HTTP_400_BAD_REQUEST
-                )
-            serializer = RecipeMinifiedSerializer(
-                recipe,
-                context=self.get_serializer_context()
-            )
-            return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-        deleted, _ = Favourites.objects.filter(
-            user=request.user, recipe=recipe
-        ).delete()
-        if not deleted:
-            return Response(
-                {'detail': 'Рецепт не был в избранном'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        serializer = RecipeMinifiedSerializer(
-            recipe,
-            context=self.get_serializer_context()
-        )
-        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         write_serializer = self.get_serializer(data=request.data)
