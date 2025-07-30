@@ -87,32 +87,30 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post'],
+        methods=['post', 'delete'],
         url_path='shopping_cart',
         permission_classes=[IsAuthenticated],
     )
-    def add_to_cart(self, request, pk=None):
-        # 1) 404, если нет такого рецепта
+    def shopping_cart(self, request, pk=None):
+        """
+        POST   /api/recipes/{pk}/shopping_cart/
+        DELETE /api/recipes/{pk}/shopping_cart/
+        """
         recipe = get_object_or_404(Recipe, pk=pk)
-        # 2) попытаемся создать связь
-        relation, created = ShoppingList.objects.get_or_create(
-            user=request.user,
-            recipe=recipe
-        )
-        if not created:
-            return Response(
-                {'detail': 'Рецепт уже в корзине'},
-                status=status.HTTP_400_BAD_REQUEST
+        if request.method == 'POST':
+            _, created = ShoppingList.objects.get_or_create(
+                user=request.user, recipe=recipe
             )
-        serializer = RecipeMinifiedSerializer(
-            recipe,
-            context=self.get_serializer_context()
-        )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
+            if not created:
+                return Response(
+                    {'detail': 'Рецепт уже в корзине'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = RecipeMinifiedSerializer(
+                recipe, context=self.get_serializer_context()
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @add_to_cart.mapping.delete
-    def remove_from_cart(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
         deleted, _ = ShoppingList.objects.filter(
             user=request.user, recipe=recipe
         ).delete()
