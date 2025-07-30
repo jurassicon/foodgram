@@ -1,4 +1,6 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Sum, F
+from django.http import HttpResponse
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status
 from rest_framework import viewsets
@@ -92,6 +94,33 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 status=status.HTTP_400_BAD_REQUEST
             )
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @action(
+        detail=False,
+        methods=['get'],
+        url_path='download_shopping_cart',
+        permission_classes=[IsAuthenticated],
+    )
+    def download_shopping_cart(self, request):
+        user = request.user
+        qs = RecipeIngredient.objects.filter(
+            recipe__shopping_recipe__user=user
+        ).values(
+            name=F('ingredient__name'),
+            unit=F('ingredient__measurement_unit')
+        ).annotate(total=Sum('amount'))
+
+        lines = []
+        for item in qs:
+            lines.append(f"{item['name']} — {item['total']} {item['unit']}")
+        content = '\n'.join(lines)
+
+        response = HttpResponse(
+            content,content_type='text/plain; charset=utf-8'
+        )
+        response[
+            'Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        return response
 
     def __create_obj_recipes(self, serializer, request, pk):
         data = {'user': request.user.id, 'recipe': int(pk)}
