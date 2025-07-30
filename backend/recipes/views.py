@@ -35,24 +35,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
     different serializers depending on the action, allows fine-grained
     permission control, and integrates with custom filtering, pagination,
     and backend configurations.
-
-    :ivar permission_classes: Specifies the permissions required to access
-                              the view. By default, it ensures that the
-                              resource can be accessed either by an
-                              authenticated user or in a read-only manner.
-    :type permission_classes: list
-    :ivar queryset: The set of recipes that this view will interact with.
-                    Recipes are ordered by their unique ID.
-    :type queryset: QuerySet
-    :ivar pagination_class: Specifies the pagination class to be used for
-                             paginating the recipes.
-    :type pagination_class: type
-    :ivar filterset_class: Specifies the filtering class used to filter
-                           recipes according to custom rules.
-    :type filterset_class: type
-    :ivar filter_backends: Specifies the filtering backend(s) to be used
-                           by the view for advanced filtering.
-    :type filter_backends: list
     """
 
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
@@ -68,10 +50,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             return RecipeListSerializer
         return RecipeDetailSerializer
 
-    def get_serializer_context(self):
-        context = super().get_serializer_context()
-        context['request'] = self.request
-        return context
 
     def update(self, request, *args, **kwargs):
         response = super().update(request, *args, **kwargs)
