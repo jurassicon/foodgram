@@ -1,4 +1,3 @@
-# recipes serializers.py
 import base64
 
 from django.contrib.auth import get_user_model
@@ -229,20 +228,16 @@ class RecipeListSerializer(serializers.ModelSerializer):
         ).exists()
 
 
-
 class IngredientSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Ingredient
         fields = ('id', 'name', 'measurement_unit')
 
 
 class FavouritesSerializer(serializers.ModelSerializer):
-
     class Meta:
         model = Favourites
         fields = ('user', 'recipe')
-
 
     def validate(self, data):
         user = data.get('user')
