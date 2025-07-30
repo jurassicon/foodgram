@@ -82,6 +82,14 @@ class Recipe(models.Model):
     pub_date = models.DateTimeField(
         'Дата публикации', auto_now_add=True
     )
+    short_url = models.CharField(
+        max_length=64,
+        unique=True,
+        editable=False,
+        blank=True,
+        null=True,
+        db_index=True,
+    )
 
     class Meta:
         default_related_name = 'recipes'
@@ -89,25 +97,22 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
 
-    def __init__(self, *args, **kwargs):
-        super().__init__(*args, **kwargs)
-        self.short_url = None
+    #def __init__(self, *args, **kwargs):
+    #    super().__init__(*args, **kwargs)
+    #    self.short_url = None
 
     def __str__(self):
         return get_short_string(self.name)
 
     def save(self, *args, **kwargs):
         if not self.short_url:
-            today = datetime.today()
-            keys_for_short_url = [
-                round(today.timestamp() * 1000),
-                self.author.id,
-                self.cooking_time
-            ]
-            sqids = Sqids()
-            code = sqids.encode(keys_for_short_url)
+            from datetime import datetime
+            from sqids import Sqids
+            timestamp = round(datetime.now().timestamp() * 1000)
+            code = Sqids().encode(
+                [timestamp, self.author_id, self.cooking_time])
             self.short_url = code
-        return super(Recipe, self).save(*args, **kwargs)
+        super().save(*args, **kwargs)
 
 
 class Ingredient(models.Model):
