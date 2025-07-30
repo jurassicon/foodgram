@@ -1,6 +1,7 @@
 from django.contrib.auth import get_user_model
 from django.db.models import Sum, F
 from django.http import HttpResponse
+from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import serializers, status
 from rest_framework import viewsets
@@ -116,11 +117,18 @@ class RecipeViewSet(viewsets.ModelViewSet):
         content = '\n'.join(lines)
 
         response = HttpResponse(
-            content,content_type='text/plain; charset=utf-8'
+            content, content_type='text/plain; charset=utf-8'
         )
         response[
             'Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return response
+
+    @action(detail=True, methods=['get'], url_path='get-link')
+    def get_link(self, request, pk=None):
+        recipe = self.get_object()
+        relative = f'/api/s/{recipe.short_url}/'
+        full_url = request.build_absolute_uri(relative)
+        return Response({'short-link': full_url}, status=status.HTTP_200_OK)
 
     def __create_obj_recipes(self, serializer, request, pk):
         data = {'user': request.user.id, 'recipe': int(pk)}
@@ -241,3 +249,8 @@ class IngredientInRecipeSerializer(serializers.ModelSerializer):
     class Meta:
         model = RecipeIngredient
         fields = ('id', 'name', 'measurement_unit', 'amount')
+
+
+def shortlink_redirect(request, code):
+    recipe = get_object_or_404(Recipe, short_url=code)
+    return redirect(f'/recipes/{recipe.id}/')
