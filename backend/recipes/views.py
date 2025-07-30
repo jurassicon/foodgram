@@ -10,7 +10,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated, \
     IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet
+from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
 
 from api.filters import RecipeFilter, IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
@@ -174,7 +174,7 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
 
 
 
-class IngredientViewSet(ModelViewSet):
+class IngredientViewSet(ReadOnlyModelViewSet):
     """
     Manages the interaction with the Ingredient resources.
 
@@ -191,18 +191,6 @@ class IngredientViewSet(ModelViewSet):
     filter_backends = (DjangoFilterBackend,)
     filterset_class = IngredientFilter
     pagination_class = None
-
-    def create(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def partial_update(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
-
-    def destroy(self, request, *args, **kwargs):
-        return Response(status=status.HTTP_405_METHOD_NOT_ALLOWED)
 
 
 class TagViewSet(viewsets.ReadOnlyModelViewSet):
