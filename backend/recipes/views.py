@@ -25,6 +25,36 @@ User = get_user_model()
 
 
 class RecipeViewSet(viewsets.ModelViewSet):
+    """
+    A view set for managing recipes in the system.
+
+    This view set provides functionality for creating, retrieving, updating,
+    and deleting recipes, as well as custom actions such as adding/removing
+    recipes from a shopping cart, downloading a shopping list, retrieving
+    a short link for a recipe, and managing favorite recipes. It supports
+    different serializers depending on the action, allows fine-grained
+    permission control, and integrates with custom filtering, pagination,
+    and backend configurations.
+
+    :ivar permission_classes: Specifies the permissions required to access
+                              the view. By default, it ensures that the
+                              resource can be accessed either by an
+                              authenticated user or in a read-only manner.
+    :type permission_classes: list
+    :ivar queryset: The set of recipes that this view will interact with.
+                    Recipes are ordered by their unique ID.
+    :type queryset: QuerySet
+    :ivar pagination_class: Specifies the pagination class to be used for
+                             paginating the recipes.
+    :type pagination_class: type
+    :ivar filterset_class: Specifies the filtering class used to filter
+                           recipes according to custom rules.
+    :type filterset_class: type
+    :ivar filter_backends: Specifies the filtering backend(s) to be used
+                           by the view for advanced filtering.
+    :type filter_backends: list
+    """
+
     permission_classes = [IsAuthenticatedOrReadOnly, IsAuthorOrReadOnly]
     queryset = Recipe.objects.all().order_by('id')
     pagination_class = CustomUserPagination
@@ -129,30 +159,29 @@ class RecipeViewSet(viewsets.ModelViewSet):
 
     @action(
         detail=True,
-        methods=['post'],
+        methods=['post', 'delete'],
         url_path='favorite',
+        url_name='favorite',
         permission_classes=[IsAuthenticated],
     )
-    def add_to_favorites(self, request, pk=None):
+    def favorite(self, request, pk=None):
         recipe = get_object_or_404(Recipe, pk=pk)
-        relation, created = Favourites.objects.get_or_create(
-            user=request.user,
-            recipe=recipe
-        )
-        if not created:
-            return Response(
-                {'detail': 'Рецепт уже в избранном'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
-        serializer = RecipeMinifiedSerializer(
-            recipe,
-            context=self.get_serializer_context()
-        )
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
-    @add_to_favorites.mapping.delete
-    def remove_from_favorites(self, request, pk=None):
-        recipe = get_object_or_404(Recipe, pk=pk)
+        if request.method == 'POST':
+            _, created = Favourites.objects.get_or_create(
+                user=request.user, recipe=recipe
+            )
+            if not created:
+                return Response(
+                    {'detail': 'Рецепт уже в избранном'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
+            serializer = RecipeMinifiedSerializer(
+                recipe,
+                context=self.get_serializer_context()
+            )
+            return Response(serializer.data, status=status.HTTP_201_CREATED)
+
         deleted, _ = Favourites.objects.filter(
             user=request.user, recipe=recipe
         ).delete()
@@ -161,7 +190,11 @@ class RecipeViewSet(viewsets.ModelViewSet):
                 {'detail': 'Рецепт не был в избранном'},
                 status=status.HTTP_400_BAD_REQUEST
             )
-        return Response(status=status.HTTP_204_NO_CONTENT)
+        serializer = RecipeMinifiedSerializer(
+            recipe,
+            context=self.get_serializer_context()
+        )
+        return Response(serializer.data, status=status.HTTP_204_NO_CONTENT)
 
     def create(self, request, *args, **kwargs):
         write_serializer = self.get_serializer(data=request.data)
