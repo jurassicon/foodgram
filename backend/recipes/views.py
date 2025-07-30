@@ -17,9 +17,9 @@ from api.permissions import IsAuthorOrReadOnly
 from recipes.models import Ingredient, Recipe, Tag, RecipeIngredient, \
     ShoppingList, Favourites
 from recipes.pagination import CustomUserPagination
-from recipes.serializers import IngredientSerializer, \
-    TagSerializer, RecipeWriteSerializer, \
-    RecipeDetailSerializer, RecipeListSerializer, RecipeMinifiedSerializer
+from recipes.serializers import (
+    IngredientSerializer, TagSerializer, RecipeWriteSerializer,
+    RecipeMinifiedSerializer, BaseRecipeSerializer)
 
 User = get_user_model()
 
@@ -93,15 +93,13 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
     def get_serializer_class(self):
         if self.action in ('create', 'update', 'partial_update'):
             return RecipeWriteSerializer
-        if self.action == 'list':
-            return RecipeListSerializer
-        return RecipeDetailSerializer
+        return BaseRecipeSerializer
 
     def create(self, request, *args, **kwargs):
         write_ser = self.get_serializer(data=request.data)
         write_ser.is_valid(raise_exception=True)
         recipe = write_ser.save()
-        read_ser = RecipeDetailSerializer(
+        read_ser = BaseRecipeSerializer(
             recipe, context=self.get_serializer_context()
         )
         return Response(read_ser.data, status=status.HTTP_201_CREATED)
@@ -114,7 +112,7 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
         )
         write_ser.is_valid(raise_exception=True)
         recipe = write_ser.save()
-        read_ser = RecipeDetailSerializer(
+        read_ser = BaseRecipeSerializer(
             recipe, context=self.get_serializer_context()
         )
         return Response(read_ser.data)
