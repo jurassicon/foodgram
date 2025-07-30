@@ -66,6 +66,7 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         allow_blank=False,
     )
     email = serializers.EmailField(
+        max_length=EMAIL_MAX_LENGTH,
         validators=[
             UniqueValidator(
                 queryset=User.objects.all(),
