@@ -1,16 +1,9 @@
+from django.conf import settings
 from django.core.exceptions import ValidationError
-from sqids import Sqids
-from datetime import datetime
-
-from django.contrib.auth import get_user_model
-from django.contrib.auth.models import User
 from django.core.validators import MinValueValidator
 from django.db import models
 from django.db.models import UniqueConstraint
 from django.utils.text import slugify
-
-
-User = get_user_model()
 
 
 def get_short_string(input_string, length=40, suffix='...'):
@@ -29,7 +22,7 @@ class Tag(models.Model):
         blank=True, null=True,
         help_text=(
             'Укажите адрес тэга. Используйте только '
-                               'латиницу, цифры, дефисы и знаки подчёркивания')
+            'латиницу, цифры, дефисы и знаки подчёркивания')
     )
 
     def save(self, *args, **kwargs):
@@ -49,7 +42,7 @@ class Tag(models.Model):
 
 class Recipe(models.Model):
     author = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='recipes',
         verbose_name='Автор'
@@ -97,10 +90,6 @@ class Recipe(models.Model):
         verbose_name_plural = 'Рецепты'
         ordering = ('-pub_date',)
 
-    #def __init__(self, *args, **kwargs):
-    #    super().__init__(*args, **kwargs)
-    #    self.short_url = None
-
     def __str__(self):
         return get_short_string(self.name)
 
@@ -118,7 +107,7 @@ class Recipe(models.Model):
 class Ingredient(models.Model):
     name = models.CharField(
         'Название', max_length=128,
-        unique=True,  help_text='Дайте короткое название рецепту',
+        unique=True, help_text='Дайте короткое название рецепту',
     )
     measurement_unit = models.CharField(
         'Единица измерения',
@@ -165,8 +154,9 @@ class RecipeIngredient(models.Model):
 
 
 class FavouritesAndShoppingList(models.Model):
-
-    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    user = models.ForeignKey(
+        settings.AUTH_USER_MODEL, on_delete=models.CASCADE
+    )
     recipe = models.ForeignKey(Recipe, on_delete=models.CASCADE)
 
     class Meta:
@@ -175,7 +165,7 @@ class FavouritesAndShoppingList(models.Model):
 
 class Favourites(FavouritesAndShoppingList):
     user = models.ForeignKey(
-        User,
+        settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
         related_name='favourites'
     )
@@ -201,8 +191,8 @@ class Favourites(FavouritesAndShoppingList):
 
     def clean(self):
         if Favourites.objects.filter(
-            user=self.user,
-            recipe=self.recipe
+                user=self.user,
+                recipe=self.recipe
         ).exists():
             raise ValidationError({
                 'recipe': 'Рецепт уже в избранном.'
@@ -210,7 +200,6 @@ class Favourites(FavouritesAndShoppingList):
 
 
 class ShoppingList(FavouritesAndShoppingList):
-
     class Meta:
         verbose_name = 'Корзина'
         verbose_name_plural = 'Корзина'
@@ -227,8 +216,8 @@ class ShoppingList(FavouritesAndShoppingList):
 
     def clean(self):
         if ShoppingList.objects.filter(
-            user=self.user,
-            recipe=self.recipe
+                user=self.user,
+                recipe=self.recipe
         ).exists():
             raise ValidationError({
                 'recipe': 'Рецепт уже в списке покупок.'
