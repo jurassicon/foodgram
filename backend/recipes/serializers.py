@@ -143,6 +143,7 @@ class RecipeDetailSerializer(serializers.ModelSerializer):
     Detailed serializer for Recipe including nested tags, ingredients,
     author info, and user-specific flags.
     """
+
     tags = TagSerializer(many=True, read_only=True)
     ingredients = IngredientInRecipeSerializer(
         many=True, read_only=True, source='recipe_ingredients'
@@ -178,6 +179,7 @@ class RecipeListSerializer(serializers.ModelSerializer):
     Serializer for listing recipes with nested tags, ingredients,
     author, and user flags.
     """
+
     tags = TagSerializer(many=True, read_only=True)
     author = UserSerializer(read_only=True)
     ingredients = IngredientInRecipeSerializer(
@@ -213,7 +215,6 @@ class IngredientSerializer(serializers.ModelSerializer):
 
 class FavouritesSerializer(serializers.ModelSerializer):
     """Serializer for managing favorites."""
-
     class Meta:
         model = Favourites
         fields = ('user', 'recipe')
