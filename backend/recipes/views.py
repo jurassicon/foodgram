@@ -1,5 +1,5 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Sum, F, Model
+from django.db.models import Sum, F
 from django.http import HttpResponse
 from django.shortcuts import redirect
 from django_filters.rest_framework import DjangoFilterBackend
@@ -10,7 +10,7 @@ from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import AllowAny, IsAuthenticated, \
     IsAuthenticatedOrReadOnly
 from rest_framework.response import Response
-from rest_framework.viewsets import ModelViewSet, ReadOnlyModelViewSet
+from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from api.filters import RecipeFilter, IngredientFilter
 from api.permissions import IsAuthorOrReadOnly
@@ -102,7 +102,7 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
         write_ser.is_valid(raise_exception=True)
         recipe = write_ser.save()
         read_ser = RecipeDetailSerializer(
-            recipe,context=self.get_serializer_context()
+            recipe, context=self.get_serializer_context()
         )
         return Response(read_ser.data, status=status.HTTP_201_CREATED)
 
@@ -133,7 +133,7 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
         orig_model, orig_ser = self.relation_model, self.serializer_class
         self.relation_model, self.serializer_class = (Favourites,
                                                       RecipeMinifiedSerializer)
-        resp = self._add_relation(request,pk) if request.method == 'POST' \
+        resp = self._add_relation(request, pk) if request.method == 'POST' \
             else self._remove_relation(request, pk)
         self.relation_model, self.serializer_class = orig_model, orig_ser
         return resp
@@ -173,16 +173,15 @@ class RecipeViewSet(AddRemoveMixin, viewsets.ModelViewSet):
         return Response({'short-link': full_url}, status=status.HTTP_200_OK)
 
 
-
 class IngredientViewSet(ReadOnlyModelViewSet):
     """
     Manages the interaction with the Ingredient resources.
 
     This class provides a viewset for interacting with the Ingredient model. It
     implements basic filtering and permissions, and it disables specific HTTP
-    methods (create, update, partial_update, and destroy). This ensures that the
-    Ingredient resources are immutable from client interactions through these
-    methods.
+    methods (create, update, partial_update, and destroy). This ensures that
+    the Ingredient resources are immutable from client interactions through
+    these methods.
     """
     queryset = Ingredient.objects.all()
     serializer_class = IngredientSerializer
