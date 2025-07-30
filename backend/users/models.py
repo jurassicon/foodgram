@@ -1,13 +1,12 @@
 from django.conf import settings
 from django.contrib.auth.models import AbstractUser
-from django.db import models
 from django.contrib.auth.validators import UnicodeUsernameValidator
-from rest_framework import serializers
+from django.db import models
+from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
 
-from users.constants import CODE_MAX_LENGTH, NAME_MAX_LENGTH
+from users.constants import NAME_MAX_LENGTH, EMAIL_MAX_LENGTH
 from .validators import validate_username
-from django.utils.translation import gettext_lazy as _
 
 
 def user_avatar_path(instance, filename):
@@ -18,7 +17,7 @@ class User(AbstractUser):
     email = models.EmailField(
         'Email',
         unique=True,
-        max_length=254,
+        max_length=EMAIL_MAX_LENGTH,
         help_text='Адрес электронной почты'
     )
     username = models.CharField(
@@ -46,7 +45,7 @@ class User(AbstractUser):
     )
 
     USERNAME_FIELD = 'email'
-    REQUIRED_FIELDS = ['username', 'first_name', 'last_name',]
+    REQUIRED_FIELDS = ['username', 'first_name', 'last_name', ]
 
     class Meta:
         verbose_name = 'пользователь'
