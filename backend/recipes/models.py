@@ -5,20 +5,20 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.utils.text import slugify
 
-
-def get_short_string(input_string, length=40, suffix='...'):
-    if len(input_string) <= length:
-        return input_string
-    return input_string[:length] + suffix
+from recipes.utils import get_short_string
+from users.constants import (
+    NAME_MAX_LENGTH, TAG_MAX_LENGTH,
+    DEFAULT_CHARFIELD_MAX_LENGTH, CHARFIELD_MAX_LENGTH_LARGE
+)
 
 
 class Tag(models.Model):
     name = models.CharField(
-        'Название', max_length=32, unique=True, blank=False,
+        'Название', max_length=TAG_MAX_LENGTH, unique=True, blank=False,
         help_text='Дайте короткое название тэгу',
     )
     slug = models.SlugField(
-        'Уникальный адрес для тэга', max_length=32, unique=True,
+        'Уникальный адрес для тэга', max_length=TAG_MAX_LENGTH, unique=True,
         blank=True, null=True,
         help_text=(
             'Укажите адрес тэга. Используйте только '
@@ -48,7 +48,7 @@ class Recipe(models.Model):
         verbose_name='Автор'
     )
     name = models.CharField(
-        'Название', max_length=256,
+        'Название', max_length=NAME_MAX_LENGTH,
         help_text='Дайте короткое название рецепту'
     )
     text = models.TextField(
@@ -76,7 +76,7 @@ class Recipe(models.Model):
         'Дата публикации', auto_now_add=True
     )
     short_url = models.CharField(
-        max_length=64,
+        max_length=DEFAULT_CHARFIELD_MAX_LENGTH,
         unique=True,
         editable=False,
         blank=True,
@@ -106,12 +106,12 @@ class Recipe(models.Model):
 
 class Ingredient(models.Model):
     name = models.CharField(
-        'Название', max_length=128,
+        'Название', max_length=CHARFIELD_MAX_LENGTH_LARGE,
         unique=True, help_text='Дайте короткое название рецепту',
     )
     measurement_unit = models.CharField(
         'Единица измерения',
-        max_length=64,
+        max_length=DEFAULT_CHARFIELD_MAX_LENGTH,
         help_text='Единица измерения (г, мл, шт и т.п.)',
     )
 
