@@ -40,7 +40,9 @@ else:
         names=['name', 'slug'],
         dtype=str,
     )
-    df_tags = df_tags.dropna(subset=['slug']).drop_duplicates(subset=['slug'])
+    df_tags['slug'] = df_tags['slug'].str.strip()
+    df_tags = df_tags[df_tags['slug'].notna()]
+    df_tags = df_tags.drop_duplicates('slug')
     tag_objs = [
         Tag(name=row['name'], slug=row['slug'])
         for _, row in df_tags.iterrows()
