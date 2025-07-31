@@ -6,7 +6,7 @@ from django.db.models import UniqueConstraint
 from django.utils.text import slugify
 
 from recipes.utils import get_short_string
-from users.constants import (
+from recipes.constants import (
     NAME_MAX_LENGTH, TAG_MAX_LENGTH,
     DEFAULT_CHARFIELD_MAX_LENGTH, CHARFIELD_MAX_LENGTH_LARGE
 )
