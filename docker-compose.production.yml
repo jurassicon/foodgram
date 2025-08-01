@@ -11,10 +11,7 @@ services:
     restart: always
     volumes:
       - pg_data:/var/lib/postgresql/data
-    environment:
-      POSTGRES_DB: ${POSTGRES_DB}
-      POSTGRES_USER: ${POSTGRES_USER}
-      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD}
+    env_file: .env
     healthcheck:
       test: ["CMD", "pg_isready", "-U", "${POSTGRES_USER}"]
       interval: 10s
@@ -34,24 +31,34 @@ services:
     ports:
       - "8000:8000"
     command: >
-      sh -c "
-        python manage.py migrate &&
-        python recipes/scripts/import_data.py &&
-        exec gunicorn --bind 0.0.0.0:8000 config.wsgi:application
-      "
+      sh -c "until nc -z $DB_HOST $DB_PORT; do
+            echo 'Waiting for Postgres…';
+            sleep 1;
+          done &&
+          python manage.py migrate &&
+          python recipes/scripts/import_data.py &&
+          exec gunicorn --bind 0.0.0.0:8000 config.wsgi:application"
 
   frontend:
     image: jurassicon/foodgram_frontend
-    restart: always
+    env_file: .env
+    command: cp -r /app/build/. /static/
+    volumes:
+      - ./frontend/:/app/result_build/
+    depends_on:
+      - backend
 
   gateway:
     image: jurassicon/foodgram_gateway
     restart: always
     ports:
-      - "80:80"
+      - "8080:80"
     depends_on:
       - backend
       - frontend
     volumes:
-      - media_volume:/etc/nginx/html/media
-      - static_volume:/etc/nginx/html/static
+      - ./gateway/nginx.conf:/etc/nginx/conf.d/custom.conf
+      - ./frontend/build:/usr/share/nginx/html
+      - ./docs/:/usr/share/nginx/html/api/docs/
+      - static_volume:/etc/nginx/html/static/
+      - media_volume:/etc/nginx/html/media/
