@@ -3,14 +3,15 @@ from djoser.serializers import SetPasswordSerializer
 from djoser.views import UserViewSet
 from rest_framework import status
 from rest_framework.decorators import action
-from rest_framework.parsers import MultiPartParser, JSONParser
-from rest_framework.permissions import IsAuthenticated, AllowAny
+from rest_framework.parsers import JSONParser, MultiPartParser
+from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.pagination import CustomUserPagination
-from .models import User, Follow
-from .serializers import UserRegistrationSerializer, UserSerializer, \
-    AvatarSerializer, UserWithRecipesSerializer
+
+from .models import Follow, User
+from .serializers import (AvatarSerializer, UserRegistrationSerializer,
+                          UserSerializer, UserWithRecipesSerializer)
 
 
 class CustomUserViewSet(UserViewSet):

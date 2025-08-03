@@ -5,11 +5,10 @@ from django.db import models
 from django.db.models import UniqueConstraint
 from django.utils.text import slugify
 
+from recipes.constants import (CHARFIELD_MAX_LENGTH_LARGE,
+                               DEFAULT_CHARFIELD_MAX_LENGTH, NAME_MAX_LENGTH,
+                               TAG_MAX_LENGTH)
 from recipes.utils import get_short_string
-from recipes.constants import (
-    NAME_MAX_LENGTH, TAG_MAX_LENGTH,
-    DEFAULT_CHARFIELD_MAX_LENGTH, CHARFIELD_MAX_LENGTH_LARGE
-)
 
 
 class Tag(models.Model):
@@ -96,6 +95,7 @@ class Recipe(models.Model):
     def save(self, *args, **kwargs):
         if not self.short_url:
             from datetime import datetime
+
             from sqids import Sqids
             timestamp = round(datetime.now().timestamp() * 1000)
             code = Sqids().encode(

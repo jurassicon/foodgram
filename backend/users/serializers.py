@@ -7,8 +7,9 @@ from rest_framework.validators import UniqueValidator
 
 from recipes.models import Recipe
 from users.validators import validate_username
+
 from .constants import EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
-from .models import User, Follow
+from .models import Follow, User
 
 
 class AvatarSerializer(serializers.ModelSerializer):

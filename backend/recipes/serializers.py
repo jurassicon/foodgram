@@ -4,8 +4,8 @@ from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from rest_framework import serializers
 
-from recipes.models import Recipe, Tag, Ingredient, RecipeIngredient, \
-    Favourites, ShoppingList
+from recipes.models import (Favourites, Ingredient, Recipe, RecipeIngredient,
+                            ShoppingList, Tag)
 from users.serializers import UserSerializer
 
 User = get_user_model()
