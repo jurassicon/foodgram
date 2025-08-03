@@ -27,17 +27,24 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v3
-      - name: Dump SSH_SECRET and test connection
+      - name: Debug raw SSH
         env:
-          HOST: ${{ secrets.HOST }}
-          USER: ${{ secrets.USERNAME }}
-          KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SSH_KEY: ${{ secrets.PRIVATE_KEY }}
+          SSH_HOST: ${{ secrets.HOST }}
+          SSH_USER: ${{ secrets.USER }}
         run: |
-          echo "$KEY" > id_rsa
+          # Убедимся, что переменные задались
+          echo "SSH_HOST=<$SSH_HOST>"
+          echo "SSH_USER=<$SSH_USER>"
+
+          # Зальём ключ в файл точно с \n
+          printf '%s\n' "$SSH_KEY" > id_rsa
           chmod 600 id_rsa
-          # Очень подробный вывод, чтобы увидеть, куда уходит попытка аутентификации
+
+          # Попытаемся подключиться
           ssh -vvv -i id_rsa -o StrictHostKeyChecking=no \
-              $USER@$HOST 'echo "SSH OK from runner"'
+              "$SSH_USER@$SSH_HOST" 'echo "SSH OK from runner"'
+
       - name: Create remote dirs
         uses: garygrossgarten/github-action-ssh@release
         with:
