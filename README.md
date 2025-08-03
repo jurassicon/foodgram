@@ -101,7 +101,7 @@ Foodgram - это веб-приложение "Продуктовый помощ
 
 ## Автор
 
-- Юрий Черкасов - [GitHub](https://github.com/jurassicon)
+Юрий Черкасов  [GitHub](https://github.com/jurassicon)
 
 ## Лицензия
 
