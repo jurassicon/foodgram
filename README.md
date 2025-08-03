@@ -57,16 +57,16 @@ Foodgram - это веб-приложение "Продуктовый помощ
 
 5. После запуска можно наполнить БД ингридиентами и импортировать теги.
    ```
-   docker-compose -f docker-compose.production.yml exec backend python manage.py makemigrations
+   docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations
    ```
    ```
-   docker-compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
+   docker compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
    ```
    ```
-   docker-compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
+   docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
    ```
    ```
-   docker-compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
+   docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
    ```
 
 ## Использование
