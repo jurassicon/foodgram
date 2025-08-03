@@ -27,51 +27,16 @@ jobs:
     needs: lint
     steps:
       - uses: actions/checkout@v3
-      - name: Debug raw SSH
-        env:
-          SSH_KEY: ${{ secrets.PRIVATE_KEY }}
-          SSH_HOST: ${{ secrets.HOST }}
-          SSH_USER: ${{ secrets.USER }}
-        run: |
-          # Убедимся, что переменные задались
-          echo "SSH_HOST=<$SSH_HOST>"
-          echo "SSH_USER=<$SSH_USER>"
-
-          # Зальём ключ в файл точно с \n
-          printf '%s\n' "$SSH_KEY" > id_rsa
-          chmod 600 id_rsa
-
-          # Попытаемся подключиться
-          ssh -vvv -i id_rsa -o StrictHostKeyChecking=no \
-              "$SSH_USER@$SSH_HOST" 'echo "SSH OK from runner"'
-
-      - name: Create remote dirs
-        uses: garygrossgarten/github-action-ssh@release
+      - name: Copy docker-compose and configs via SSH
+        uses: appleboy/ssh-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
-          command: |
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
             mkdir -p ~/projects/foodgram/gateway
             mkdir -p ~/projects/foodgram/docs
-      - name: Copy docker-compose and gateway config
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
-          local: |
-            docker-compose.production.yml
-            gateway/
-          remote: ~/projects/foodgram/
-      - name: Copy docs
-        uses: garygrossgarten/github-action-scp@release
-        with:
-          host: ${{ secrets.HOST }}
-          username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
-          local: docs/
-          remote: ~/projects/foodgram/docs/
 
   build_and_push_backend:
     name: Build & Push Backend
