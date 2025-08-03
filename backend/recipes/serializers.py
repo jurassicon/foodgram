@@ -3,9 +3,16 @@ import base64
 from django.contrib.auth import get_user_model
 from django.core.files.base import ContentFile
 from rest_framework import serializers
-from recipes.models import (Favourites, Ingredient, Recipe, RecipeIngredient,
-                            ShoppingList, Tag)
 from users.serializers import UserSerializer
+
+from recipes.models import (
+    Favourites,
+    Ingredient,
+    Recipe,
+    RecipeIngredient,
+    ShoppingList,
+    Tag,
+)
 
 User = get_user_model()
 
