@@ -1,10 +1,9 @@
 import datetime as dt
 
+from config.settings import EMAIL_NAME_FROM
 from django.contrib.auth.tokens import default_token_generator
 from django.core.exceptions import ValidationError
 from django.core.mail import send_mail
-
-from config.settings import EMAIL_NAME_FROM
 
 
 def send_email_code(user):

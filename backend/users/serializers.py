@@ -2,10 +2,10 @@ from django.contrib.auth.password_validation import validate_password
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import IntegrityError
 from drf_extra_fields.fields import Base64ImageField
+from recipes.models import Recipe
 from rest_framework import serializers
 from rest_framework.validators import UniqueValidator
 
-from recipes.models import Recipe
 from users.validators import validate_username
 
 from .constants import EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
