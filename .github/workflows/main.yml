@@ -32,7 +32,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
+          privateKey: ${{ secrets.SSH_KEY }}
           command: |
             mkdir -p ~/projects/foodgram/gateway
             mkdir -p ~/projects/foodgram/docs
@@ -41,7 +41,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
+          privateKey: ${{ secrets.SSH_KEY }}
           local: |
             docker-compose.production.yml
             gateway/
@@ -51,7 +51,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
+          privateKey: ${{ secrets.SSH_KEY }}
           local: docs/
           remote: ~/projects/foodgram/docs/
 
@@ -102,7 +102,7 @@ jobs:
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USERNAME }}
-          privateKey: ${{ secrets.PRIVATE_KEY }}
+          privateKey: ${{ secrets.SSH_KEY }}
           command: |
             cd ~/projects/foodgram
             cat > .env <<EOF
