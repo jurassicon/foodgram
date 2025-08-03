@@ -4,6 +4,7 @@ from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
 from rest_framework.exceptions import ValidationError
+
 from users.constants import EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
 
 from .validators import validate_username
