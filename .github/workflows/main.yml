@@ -2,7 +2,8 @@ name: CI Foodgram worklow
 
 on:
   push:
-    branches: [ master ]
+    branches:
+      - main
 
 jobs:
   lint:
