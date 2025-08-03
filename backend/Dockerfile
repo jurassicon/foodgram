@@ -1,28 +1,7 @@
-# Создать образ на основе базового слоя,
-# который содержит файлы ОС и интерпретатор Python 3.12.
 FROM python:3.11
-
-# Переходим в образе в директорию /app: в ней будем хранить код проекта.
-# Если директории с указанным именем нет, она будет создана.
-# Название директории может быть любым.
 WORKDIR /app
-# Дальнейшие инструкции будут выполняться в директории /app
-
-# Скопировать с локального компьютера файл зависимостей
-# в текущую директорию (текущая директория — это /app).
 COPY requirements.txt .
-
-# Выполнить в текущей директории команду терминала
-# для установки зависимостей.
-RUN apt-get update && apt-get install -y netcat-openbsd  \
-    && rm -rf /var/lib/apt/lists/*
-RUN python -m pip install --upgrade pip
-RUN pip install -r requirements.txt --no-cache-dir
-
-# Скопировать всё необходимое содержимое
-# той директории локального компьютера, где сохранён Dockerfile,
-# в текущую рабочую директорию образа — /app.
+RUN apt-get update && apt-get upgrade -y && \
+    pip install --upgrade pip && pip install -r requirements.txt
 COPY backend/ .
-
-# При старте контейнера запустить gunicorn.
-CMD ["gunicorn", "--bind", "0.0.0.0:8000", "foodgram.wsgi"]
+CMD ["gunicorn", "--bind", "0.0.0.0:8000", "config.wsgi"]
