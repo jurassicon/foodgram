@@ -55,6 +55,20 @@ Foodgram - это веб-приложение "Продуктовый помощ
 - **API**: http://localhost/api/
 - **Документация API**: http://localhost/api/docs/
 
+5. После запуска можно наполнить БД ингридиентами и импортировать теги.
+   ```
+   docker-compose exec backend python manage.py makemigrations
+   ```
+   ```
+   docker-compose exec backend python manage.py migrate --noinput
+   ```
+   ```
+   docker-compose exec backend python manage.py collectstatic --no-input
+   ```
+   ```
+   docker-compose exec backend python manage.py createsuperuser
+   ```
+
 ## Использование
 
 ### Регистрация и авторизация
