@@ -99,6 +99,10 @@ Foodgram - это веб-приложение "Продуктовый помощ
    - `PRIVATE_KEY` - приватный SSH-ключ
    - `DOCKER_USER` - имя пользователя Docker Hub
    - `DOCKER_PASS` - пароль от Docker Hub
+   - Переменные для PostgreSQL
+   - `POSTGRES_DB` - имя БД
+   - `POSTGRES_USER` - имя пользователя БД
+   - `POSTGRES_PASSWORD` - пароль пользователя БД
    - Все переменные окружения из файла `.env`
    - `TELEGRAM_TO` и `TELEGRAM_TOKEN` (опционально, для уведомлений)
 
