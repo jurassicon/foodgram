@@ -22,13 +22,25 @@ Foodgram - это веб-приложение "Продуктовый помощ
 
 ### Локальная разработка
 
-1. Клонируйте репозиторий:
+1. Подготовка сервера:
    ```
-   git clone https://github.com/your-username/foodgram.git
+   sudo apt update
+   sudo apt upgrade -y
+   sudo apt install curl
+   ```
+   ```
+   curl -fSL https://get.docker.com -o get-docker.sh
+   ```
+   ```
+   sudo apt install docker-compose-plugin
+   ```
+2. Клонируйте репозиторий:
+   ```
+   git clone https://github.com/jurassicon/foodgram.git
    cd foodgram
    ```
 
-2. Создайте файл `.env` в корневой директории проекта со следующими переменными:
+3. Создайте файл `.env` в корневой директории проекта со следующими переменными:
    ```
    DEBUG=False
    SECRET_KEY=your-secret-key
@@ -43,19 +55,19 @@ Foodgram - это веб-приложение "Продуктовый помощ
    DB_PORT=5432
    ```
 
-3. Запустите проект с помощью Docker Compose:
+4. Запустите проект с помощью Docker Compose:
    ```
    docker-compose up -d
    ```
 
-4. После запуска проект будет доступен по адресу: http://localhost
+5. После запуска проект будет доступен по адресу: http://localhost
 
 ### Доступ к API и документации
 
 - **API**: http://localhost/api/
 - **Документация API**: http://localhost/api/docs/
 
-5. После запуска можно наполнить БД ингридиентами и импортировать теги.
+6. После запуска можно наполнить БД ингридиентами и импортировать теги.
    ```
    docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations
    ```
