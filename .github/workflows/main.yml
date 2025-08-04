@@ -105,8 +105,8 @@ jobs:
             DB_PORT=${{ secrets.DB_PORT }}
             EOF
 
-            sudo docker-compose -f docker-compose.production.yml down
-            sudo docker-compose -f docker-compose.production.yml up -d --remove-orphans
+            sudo docker compose -f docker-compose.production.yml down
+            sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
             sudo docker image prune -af
             rm -f .env
   
