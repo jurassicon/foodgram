@@ -57,7 +57,7 @@ Foodgram - это веб-приложение "Продуктовый помощ
 
 4. Запустите проект с помощью Docker Compose:
    ```
-   docker-compose up -d
+   docker-compose -f docker-compose.production.yml up -d
    ```
 
 5. После запуска проект будет доступен по адресу: http://localhost
