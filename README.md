@@ -68,7 +68,9 @@ Foodgram - это веб-приложение "Продуктовый помощ
    ```
    docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
    ```
-
+   ```
+   docker compose -f docker-compose.production.yml exec backend python recipes/scripts/import_data.py
+   ```
 ## Использование
 
 ### Регистрация и авторизация
