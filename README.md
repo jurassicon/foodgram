@@ -128,7 +128,7 @@ Foodgram - это веб-приложение "Продуктовый помощ
 - `backend/` - Django-приложение (API)
 - `frontend/` - React-приложение
 - `gateway/` - Конфигурация Nginx
-- `docs/` - Документация API
+- `backend/docs/` - Документация API
 - `.github/workflows/` - Конфигурация CI/CD
 
 ## Автор
