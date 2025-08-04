@@ -42,17 +42,17 @@ Foodgram - это веб-приложение "Продуктовый помощ
 
 3. Создайте файл `.env` в корневой директории проекта со следующими переменными:
    ```
-   DEBUG=False
-   SECRET_KEY=your-secret-key
-   ALLOWED_HOSTS=localhost,127.0.0.1
-   CSRF_TRUSTED_ORIGINS=http://localhost,http://127.0.0.1
-   
-   DB_ENGINE=django.db.backends.postgresql
-   DB_NAME=postgres
-   POSTGRES_USER=postgres
-   POSTGRES_PASSWORD=postgres
-   DB_HOST=db
+   POSTGRES_DB=<db_name>
+   POSTGRES_USER=<some_username>
+   POSTGRES_PASSWORD=<password>
+   DB_NAME=<db_name>
+   DB_HOST=<db_host>
+   DB_PASSWORD=<password>
    DB_PORT=5432
+   SECRET_KEY="django-insecure-code"
+   DEBUG=False
+   ALLOWED_HOSTS=localhost 000.000.00.00 site.com
+   CSRF_TRUSTED_ORIGINS=https://site.com
    ```
 
 4. Запустите проект с помощью Docker Compose:
