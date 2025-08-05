@@ -66,6 +66,7 @@ class RecipeAdmin(admin.ModelAdmin):
 
 @admin.register(Tag)
 class TagAdmin(admin.ModelAdmin):
+    prepopulated_fields = {'slug': ('name',)}
     list_display = ('name', 'slug')
     search_fields = ('name',)
     list_editable = ('slug',)
