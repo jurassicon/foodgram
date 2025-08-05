@@ -1,9 +1,13 @@
 from django.contrib import admin
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 
-from users.models import User  # если нужно
+from django.contrib.auth import get_user_model
+from django.contrib.auth.models import Group
+from django.db.models import Count
 
-from .models import Favourites, Ingredient, Recipe, RecipeIngredient, Tag
+from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
+User = get_user_model()
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
@@ -44,6 +48,10 @@ class RecipeAdmin(admin.ModelAdmin):
         }),
     )
 
+    def get_queryset(self, request):
+        qs = super().get_queryset(request)
+        return qs.annotate(favorites_count=Count('favorites'))
+
     @admin.display(description='Автор')
     def author_name(self, obj):
         first = obj.author.first_name or ''
@@ -51,9 +59,9 @@ class RecipeAdmin(admin.ModelAdmin):
         return f'{first} {last}'.strip() or obj.author.username
 
     @admin.display(description='Добавлений в избранное',
-                   ordering='favourites__count')
+                   ordering='favorites_count')
     def favorites_count(self, obj):
-        return Favourites.objects.filter(recipe=obj).count()
+        return obj.favorites_count
 
 
 @admin.register(Tag)
@@ -70,7 +78,7 @@ class IngredientAdmin(admin.ModelAdmin):
 
 
 @admin.register(User)
-class UserAdmin(admin.ModelAdmin):
+class UserAdmin(DjangoUserAdmin):
     list_display = ('username', 'email', 'first_name', 'last_name')
     search_fields = ('username', 'email',)
     list_filter = ('is_active', 'is_staff', 'is_superuser')
@@ -78,3 +86,4 @@ class UserAdmin(admin.ModelAdmin):
 
 
 admin.site.empty_value_display = 'Не задано'
+admin.site.unregister(Group)
