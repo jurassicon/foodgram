@@ -131,6 +131,9 @@ Foodgram - это веб-приложение "Продуктовый помощ
 - `backend/docs/` - Документация API
 - `.github/workflows/` - Конфигурация CI/CD
 
+## Проект доступен по адресу 
+  http://diddly-squat.ru/
+
 ## Автор
 
 Юрий Черкасов  [GitHub](https://github.com/jurassicon)
