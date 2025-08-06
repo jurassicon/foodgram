@@ -136,7 +136,7 @@ REST_FRAMEWORK = {
         'rest_framework.authentication.SessionAuthentication',
     ],
 
-    'DEFAULT_PAGINATION_CLASS': 'recipes.pagination.CustomUserPagination',
+    'DEFAULT_PAGINATION_CLASS': 'recipes.pagination.RecipesPagination',
     'PAGE_SIZE': 6,
 }
 
