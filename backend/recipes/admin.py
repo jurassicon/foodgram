@@ -21,7 +21,7 @@ class RecipeAdmin(admin.ModelAdmin):
     list_display = (
         'name',
         'author_name',
-        'favorites_count',
+        'favourites_count',
         'pub_date',
         'cooking_time',
     )
@@ -33,7 +33,7 @@ class RecipeAdmin(admin.ModelAdmin):
         'author__last_name',
     )
     list_filter = ('tags',)
-    readonly_fields = ('favorites_count',)
+    readonly_fields = ('favourites_count',)
     fieldsets = (
         (None, {
             'fields': (
@@ -43,14 +43,14 @@ class RecipeAdmin(admin.ModelAdmin):
                 'image',
                 'cooking_time',
                 'tags',
-                'favorites_count',
+                'favourites_count',
             )
         }),
     )
 
     def get_queryset(self, request):
         qs = super().get_queryset(request)
-        return qs.annotate(favorites_count=Count('favorites'))
+        return qs.annotate(favourites_count=Count('favourites'))
 
     @admin.display(description='Автор')
     def author_name(self, obj):
@@ -59,9 +59,9 @@ class RecipeAdmin(admin.ModelAdmin):
         return f'{first} {last}'.strip() or obj.author.username
 
     @admin.display(description='Добавлений в избранное',
-                   ordering='favorites_count')
-    def favorites_count(self, obj):
-        return obj.favorites_count
+                   ordering='favourites_count')
+    def favourites_count(self, obj):
+        return obj.favourites_count
 
 
 @admin.register(Tag)
