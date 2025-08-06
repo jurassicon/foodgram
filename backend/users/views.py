@@ -7,7 +7,7 @@ from rest_framework.parsers import JSONParser, MultiPartParser
 from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
-from recipes.pagination import CustomUserPagination
+from recipes.pagination import RecipesPagination
 
 from .models import Follow, User
 from .serializers import (
@@ -31,7 +31,7 @@ class CustomUserViewSet(UserViewSet):
     lookup_field = 'pk'
     serializer_class = UserSerializer
     queryset = User.objects.all()
-    pagination_class = CustomUserPagination
+    pagination_class = RecipesPagination
 
     def get_permissions(self):
         if self.action in ('list', 'retrieve', 'create'):
