@@ -1,13 +1,13 @@
 from django.contrib import admin
-from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
-
 from django.contrib.auth import get_user_model
+from django.contrib.auth.admin import UserAdmin as DjangoUserAdmin
 from django.contrib.auth.models import Group
 from django.db.models import Count
 
 from .models import Ingredient, Recipe, RecipeIngredient, Tag
 
 User = get_user_model()
+
 
 class RecipeIngredientInline(admin.TabularInline):
     model = RecipeIngredient
