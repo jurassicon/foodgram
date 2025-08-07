@@ -7,7 +7,7 @@ from rest_framework.permissions import AllowAny, IsAuthenticated
 from rest_framework.response import Response
 
 from recipes.pagination import RecipesPagination
-from .models import Follow, User
+from users.models import Follow, User
 from .serializers import (
     AvatarSerializer,
     UserSerializer,
