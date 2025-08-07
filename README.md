@@ -132,7 +132,7 @@ Foodgram - это веб-приложение "Продуктовый помощ
 - `.github/workflows/` - Конфигурация CI/CD
 
 ## Проект доступен по адресу 
-  http://diddly-squat.ru/
+  https://diddly-squat.ru/
 
 ## Автор
 
