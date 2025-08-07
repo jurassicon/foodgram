@@ -86,7 +86,7 @@ class Recipe(models.Model):
         default_related_name = 'recipes'
         verbose_name = 'Рецепт'
         verbose_name_plural = 'Рецепты'
-        ordering = ('-pub_date',)
+        ordering = ('-name',)
 
     def __str__(self):
         return get_short_string(self.name)
