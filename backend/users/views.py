@@ -8,7 +8,7 @@ from rest_framework.response import Response
 
 from recipes.pagination import RecipesPagination
 from users.models import Follow, User
-from .serializers import (
+from users.serializers import (
     AvatarSerializer,
     UserSerializer,
     UserWithRecipesSerializer,
