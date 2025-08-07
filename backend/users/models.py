@@ -3,11 +3,8 @@ from django.contrib.auth.models import AbstractUser
 from django.contrib.auth.validators import UnicodeUsernameValidator
 from django.db import models
 from django.utils.translation import gettext_lazy as _
-from rest_framework.exceptions import ValidationError
 
 from users.constants import EMAIL_MAX_LENGTH, NAME_MAX_LENGTH
-
-from .validators import validate_username
 
 
 def user_avatar_path(instance, filename):
@@ -24,7 +21,7 @@ class User(AbstractUser):
     username = models.CharField(
         max_length=NAME_MAX_LENGTH,
         unique=True,
-        validators=[UnicodeUsernameValidator(), validate_username],
+        validators=[UnicodeUsernameValidator()],
         error_messages={
             "unique": _(" Такой пользователь уже существует."),
         },
@@ -55,12 +52,6 @@ class User(AbstractUser):
 
     def __str__(self):
         return self.username
-
-    def clean(self):
-        if not self.email:
-            raise ValidationError('Email обязателен')
-        if not self.username:
-            raise ValidationError('Username обязателен')
 
 
 class Follow(models.Model):
