@@ -7,7 +7,7 @@ from recipes.views import (
     TagViewSet,
     shortlink_redirect,
 )
-from users.views import CustomUserViewSet
+from users.views import UsersViewSet
 
 app_name = 'api'
 
@@ -15,7 +15,7 @@ router = DefaultRouter()
 router.register('ingredients', IngredientViewSet, basename='ingredients')
 router.register('tags', TagViewSet, basename='tags')
 router.register('recipes', RecipeViewSet, basename='recipes')
-router.register('users', CustomUserViewSet, basename='user')
+router.register('users', UsersViewSet, basename='user')
 
 urlpatterns = [
     path('', include(router.urls)),
