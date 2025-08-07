@@ -11,6 +11,8 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost')
+
 AUTH_USER_MODEL = 'users.User'
 
 MEDIA_URL = '/media/'
@@ -132,7 +134,6 @@ REST_FRAMEWORK = {
     ],
 
     'DEFAULT_AUTHENTICATION_CLASSES': [
-        'rest_framework.authentication.SessionAuthentication',
         'rest_framework.authentication.TokenAuthentication',
     ],
 
@@ -146,6 +147,7 @@ DJOSER = {
     'SERIALIZERS': {
         'user': 'users.serializers.UserSerializer',
         'current_user': 'users.serializers.UserSerializer',
+        'set_password': 'djoser.serializers.SetPasswordSerializer',
     },
     'PERMISSIONS': {
         'user_create': ['rest_framework.permissions.AllowAny'],
@@ -154,6 +156,7 @@ DJOSER = {
         'user_list': ['rest_framework.permissions.AllowAny'],
         'current_user':   ['rest_framework.permissions.AllowAny'],
         'token_destroy': ['rest_framework.permissions.IsAuthenticated'],
+        'set_password': ['rest_framework.permissions.IsAuthenticated'],
     },
 }
 
