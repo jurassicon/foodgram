@@ -154,25 +154,23 @@ class RecipeSerializer(serializers.ModelSerializer):
     is_favorited = serializers.SerializerMethodField()
     is_in_shopping_cart = serializers.SerializerMethodField()
 
-    def get_is_favorited(self, obj):
-        request = self.context.get('request')
-        return bool(
-            request and
-            request.user.is_authenticated and
-            Favourites.objects.filter(user=request.user, recipe=obj).exists()
-        )
-
-    def get_is_in_shopping_cart(self, obj):
-        request = self.context.get('request')
-        return bool(
-            request and
-            request.user.is_authenticated and
-            ShoppingList.objects.filter(user=request.user, recipe=obj).exists()
-        )
-
     class Meta:
         model = Recipe
         fields = (
             'id', 'tags', 'author', 'ingredients', 'is_favorited',
             'is_in_shopping_cart', 'name', 'image', 'text', 'cooking_time'
         )
+
+    def _has_relation(self, obj, model):
+        request = self.context.get('request')
+        return bool(
+            request
+            and request.user.is_authenticated
+            and model.objects.filter(user=request.user, recipe=obj).exists()
+        )
+
+    def get_is_favorited(self, obj):
+        return self._has_relation(obj, Favourites)
+
+    def get_is_in_shopping_cart(self, obj):
+        return self._has_relation(obj, ShoppingList)
