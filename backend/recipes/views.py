@@ -190,6 +190,7 @@ def shortlink_redirect(request, code):
     base = settings.FRONTEND_URL
     try:
         recipe = Recipe.objects.get(short_url=code)
+    # Не могу понять, почему перестал работать редирект на рецепт
     except Recipe.DoesNotExist:
         return redirect(f'{base}/404')
     return redirect(f'/recipes/{recipe.id}')
