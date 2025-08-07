@@ -1,10 +1,10 @@
 from django.contrib.auth import get_user_model
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect
-from django.db.models import Exists, OuterRef, Value, BooleanField
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import serializers, status, viewsets
+from rest_framework import status, viewsets
 from rest_framework.decorators import action
 from rest_framework.generics import get_object_or_404
 from rest_framework.permissions import (
@@ -86,7 +86,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
             )
         return qs
 
-
     def _handle_relation(self, request, pk, relation_model, serializer_cls):
         recipe = get_object_or_404(Recipe, pk=pk)
         if request.method == 'POST':
@@ -96,7 +95,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
             if not created:
                 return Response({'detail': 'Уже добавлено'},
                                 status=status.HTTP_400_BAD_REQUEST)
-            data = serializer_cls(recipe, context=self.get_serializer_context()).data
+            data = serializer_cls(recipe,
+                                  context=self.get_serializer_context()).data
             return Response(data, status=status.HTTP_201_CREATED)
 
         # DELETE
@@ -144,7 +144,8 @@ class RecipeViewSet(viewsets.ModelViewSet):
         lines = [f"{i['name']} — {i['total']} {i['unit']}" for i in qs]
         content = '\n'.join(lines)
         resp = HttpResponse(content, content_type='text/plain; charset=utf-8')
-        resp['Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
+        resp[
+            'Content-Disposition'] = 'attachment; filename="shopping_list.txt"'
         return resp
 
     @action(detail=True, methods=['get'], url_path='get-link')
@@ -186,8 +187,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 def shortlink_redirect(request, code):
+    base = settings.FRONTEND_URL
     try:
         recipe = Recipe.objects.get(short_url=code)
     except Recipe.DoesNotExist:
-        return redirect(f'{settings.ALLOWED_HOSTS}/404')
-    return redirect(f'{settings.ALLOWED_HOSTS}/recipes/{recipe.id}')
+        return redirect(f'{base}/404')
+    return redirect(f'/recipes/{recipe.id}')
