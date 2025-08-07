@@ -40,7 +40,6 @@ class UserSerializer(serializers.ModelSerializer):
 
 class RecipeMinifiedSerializer(serializers.ModelSerializer):
     """Serializer for minimal recipe info in favorites and shopping cart."""
-
     class Meta:
         model = Recipe
         fields = (
@@ -63,7 +62,6 @@ class UserWithRecipesSerializer(UserSerializer):
     """
     recipes = serializers.SerializerMethodField()
     recipes_count = serializers.SerializerMethodField()
-
 
     class Meta(UserSerializer.Meta):
         fields = UserSerializer.Meta.fields + (
