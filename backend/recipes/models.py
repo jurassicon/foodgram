@@ -4,6 +4,7 @@ from django.conf import settings
 from django.core.exceptions import ValidationError
 from django.core.validators import MinValueValidator
 from django.db import models
+from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.db.models import UniqueConstraint
 
 from recipes.constants import (
@@ -14,6 +15,32 @@ from recipes.constants import (
     AMOUNT_TIME_MIN_VALUE,
 )
 from recipes.utils import get_short_string
+
+
+class RecipeQuerySet(models.QuerySet):
+    def with_user_flags(self, user):
+        if user.is_authenticated:
+            fav_qs = Favourites.objects.filter(user=user,
+                                               recipe=OuterRef('pk'))
+            cart_qs = ShoppingList.objects.filter(user=user,
+                                                  recipe=OuterRef('pk'))
+            return self.annotate(
+                is_favorited=Exists(fav_qs),
+                is_in_shopping_cart=Exists(cart_qs),
+            )
+        return self.annotate(
+            is_favorited=Value(False, output_field=BooleanField()),
+            is_in_shopping_cart=Value(False, output_field=BooleanField()),
+        )
+
+
+class RecipeManager(models.Manager):
+    def get_queryset(self):
+        return RecipeQuerySet(self.model, using=self._db)
+
+    # чтобы можно было вызывать прямо от Recipe.objects
+    def with_user_flags(self, user):
+        return self.get_queryset().with_user_flags(user)
 
 
 class Tag(models.Model):
@@ -39,6 +66,7 @@ class Tag(models.Model):
 
 
 class Recipe(models.Model):
+    objects = RecipeManager()
     author = models.ForeignKey(
         settings.AUTH_USER_MODEL,
         on_delete=models.CASCADE,
