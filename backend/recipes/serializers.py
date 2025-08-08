@@ -7,8 +7,7 @@ from recipes.models import (
     Ingredient,
     Recipe,
     RecipeIngredient,
-    Tag, Favourites, ShoppingList,
-)
+    Tag, )
 from users.serializers import UserSerializer
 
 User = get_user_model()
@@ -107,21 +106,16 @@ class RecipeWriteSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         ingredients_data = validated_data.pop('recipe_ingredients', None)
         tags = validated_data.pop('tags', None)
-        for attr, value in validated_data.items():
-            setattr(instance, attr, value)
-        instance = super().update(instance, validated_data)
-        instance.tags.set(tags)
-        instance.recipe_ingredients.all().delete()
+
+        if tags is not None:
+            instance.tags.set(tags)
+
         if ingredients_data is not None:
             instance.recipe_ingredients.all().delete()
             self._save_ingredients(instance, ingredients_data)
-        return instance
+        return super().update(instance, validated_data)
 
     def to_representation(self, instance):
-        """
-        После сохранения (create/update) возвращаем те же данные,
-        что базовый рид-сиалайзер.
-        """
         return RecipeSerializer(
             instance,
             context=self.context
@@ -151,8 +145,8 @@ class RecipeSerializer(serializers.ModelSerializer):
         many=True, read_only=True, source='recipe_ingredients'
     )
     author = UserSerializer(read_only=True)
-    is_favorited = serializers.SerializerMethodField()
-    is_in_shopping_cart = serializers.SerializerMethodField()
+    is_favorited = serializers.BooleanField(default=False)
+    is_in_shopping_cart = serializers.BooleanField(default=False)
 
     class Meta:
         model = Recipe
@@ -168,9 +162,3 @@ class RecipeSerializer(serializers.ModelSerializer):
             and request.user.is_authenticated
             and model.objects.filter(user=request.user, recipe=obj).exists()
         )
-
-    def get_is_favorited(self, obj):
-        return self._has_relation(obj, Favourites)
-
-    def get_is_in_shopping_cart(self, obj):
-        return self._has_relation(obj, ShoppingList)
