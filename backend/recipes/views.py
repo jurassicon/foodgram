@@ -1,7 +1,6 @@
 from django.contrib.auth import get_user_model
 from django.db.models import F, Sum
-from django.http import HttpResponse
-from django.shortcuts import redirect
+from django.http import HttpResponse, HttpResponseRedirect
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import status, viewsets
 from rest_framework.decorators import action
@@ -16,7 +15,6 @@ from rest_framework.viewsets import ReadOnlyModelViewSet
 
 from api.filters import IngredientFilter, RecipeFilter
 from api.permissions import IsAuthorOrReadOnly
-from config import settings
 from recipes.models import (
     Favourites,
     Ingredient,
@@ -168,9 +166,8 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 def shortlink_redirect(request, code):
-    base = settings.FRONTEND_URL.rstrip('/')
     try:
         recipe = Recipe.objects.get(short_url=code)
     except Recipe.DoesNotExist:
-        return redirect(f'{base}/not-found')
-    return redirect(f'{base}/recipes/{recipe.id}')
+        return HttpResponseRedirect('/not-found')
+    return HttpResponseRedirect(f'/recipes/{recipe.id}')
