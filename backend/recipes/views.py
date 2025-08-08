@@ -1,5 +1,4 @@
 from django.contrib.auth import get_user_model
-from django.db.models import Exists, OuterRef, Value, BooleanField
 from django.db.models import F, Sum
 from django.http import HttpResponse
 from django.shortcuts import redirect
@@ -24,8 +23,7 @@ from recipes.models import (
     Recipe,
     RecipeIngredient,
     ShoppingList,
-    Tag,
-)
+    Tag, )
 from recipes.pagination import RecipesPagination
 from recipes.serializers import (
     RecipeSerializer,
@@ -66,25 +64,9 @@ class RecipeViewSet(viewsets.ModelViewSet):
         return RecipeSerializer
 
     def get_queryset(self):
-        qs = super().get_queryset()
-        user = self.request.user
-        if user.is_authenticated:
-            fav_qs = Favourites.objects.filter(
-                user=user, recipe=OuterRef('pk')
-            )
-            cart_qs = ShoppingList.objects.filter(
-                user=user, recipe=OuterRef('pk')
-            )
-            qs = qs.annotate(
-                is_favorited=Exists(fav_qs),
-                is_in_shopping_cart=Exists(cart_qs)
-            )
-        else:
-            qs = qs.annotate(
-                is_favorited=Value(False, output_field=BooleanField()),
-                is_in_shopping_cart=Value(False, output_field=BooleanField())
-            )
-        return qs
+        return super().get_queryset().with_user_flags(
+            self.request.user
+        ).order_by('id')
 
     def _handle_relation(self, request, pk, relation_model, serializer_cls):
         recipe = get_object_or_404(Recipe, pk=pk)
@@ -99,7 +81,6 @@ class RecipeViewSet(viewsets.ModelViewSet):
                                   context=self.get_serializer_context()).data
             return Response(data, status=status.HTTP_201_CREATED)
 
-        # DELETE
         deleted, _ = relation_model.objects.filter(
             user=request.user, recipe=recipe
         ).delete()
@@ -187,10 +168,9 @@ class TagViewSet(viewsets.ReadOnlyModelViewSet):
 
 
 def shortlink_redirect(request, code):
-    base = settings.FRONTEND_URL
+    base = settings.FRONTEND_URL.rstrip('/')
     try:
         recipe = Recipe.objects.get(short_url=code)
-    # Не могу понять, почему перестал работать редирект на рецепт
     except Recipe.DoesNotExist:
-        return redirect(f'{base}/404')
-    return redirect(f'/recipes/{recipe.id}')
+        return redirect(f'{base}/not-found')
+    return redirect(f'{base}/recipes/{recipe.id}')
