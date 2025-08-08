@@ -5,7 +5,6 @@ from recipes.views import (
     IngredientViewSet,
     RecipeViewSet,
     TagViewSet,
-    shortlink_redirect,
 )
 from users.views import UsersViewSet
 
@@ -21,5 +20,4 @@ urlpatterns = [
     path('', include(router.urls)),
     path('', include('djoser.urls')),
     path('auth/', include('djoser.urls.authtoken')),
-    path('s/<str:code>/', shortlink_redirect, name='short-link'),
 ]
