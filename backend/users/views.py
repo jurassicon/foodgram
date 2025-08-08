@@ -44,13 +44,8 @@ class UsersViewSet(UserViewSet):
     )
     def avatar(self, request):
         user = request.user
-        if request.method == 'GET':
-            return Response(
-                {'avatar': user.avatar.url if user.avatar else None},
-                status=status.HTTP_200_OK
-            )
 
-        elif request.method == 'PUT':
+        if request.method == 'PUT':
             serializer = AvatarSerializer(
                 user, data=request.data, partial=True
             )
@@ -58,8 +53,7 @@ class UsersViewSet(UserViewSet):
             serializer.save()
             return Response(serializer.data, status=status.HTTP_200_OK)
 
-        user.avatar = None
-        user.save()
+        user.avatar.delete(save=True)
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @action(
@@ -71,13 +65,6 @@ class UsersViewSet(UserViewSet):
     )
     def me_url(self, request):
         user = request.user
-        if request.method == 'PATCH':
-            serializer = self.get_serializer(
-                user, data=request.data, partial=True
-            )
-            serializer.is_valid(raise_exception=True)
-            serializer.save()
-            return Response(serializer.data, status=status.HTTP_200_OK)
         serializer = self.get_serializer(user, many=False)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
@@ -91,12 +78,12 @@ class UsersViewSet(UserViewSet):
     def subscribe(self, request, pk=None):
         author = get_object_or_404(User, pk=pk)
         user = request.user
-        if request.method == 'POST' and author == user:
-            return Response(
-                {'detail': 'Нельзя подписаться на самого себя'},
-                status=status.HTTP_400_BAD_REQUEST
-            )
         if request.method == 'POST':
+            if author == user:
+                return Response(
+                    {'detail': 'Нельзя подписаться на самого себя'},
+                    status=status.HTTP_400_BAD_REQUEST
+                )
             follow, created = Follow.objects.get_or_create(
                 user=user,
                 following=author
