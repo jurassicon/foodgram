@@ -15,6 +15,8 @@ FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost')
 
 AUTH_USER_MODEL = 'users.User'
 
+RECIPES_PER_PAGE = 6
+
 MEDIA_URL = '/media/'
 
 MEDIA_ROOT = BASE_DIR / 'media'
