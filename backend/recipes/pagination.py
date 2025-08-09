@@ -1,6 +1,6 @@
 from rest_framework.pagination import PageNumberPagination
 
-from config import settings
+from django.conf import settings
 
 
 class RecipesPagination(PageNumberPagination):
