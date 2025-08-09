@@ -11,6 +11,8 @@ DEBUG = os.getenv('DEBUG', 'False').lower() in ('true', '1', 'yes')
 
 ALLOWED_HOSTS = os.getenv('ALLOWED_HOSTS', 'localhost 127.0.0.1').split(' ')
 
+FRONTEND_URL = os.getenv('FRONTEND_URL', 'http://localhost')
+
 AUTH_USER_MODEL = 'users.User'
 
 RECIPES_PER_PAGE = 6
