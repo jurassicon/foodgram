@@ -48,9 +48,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           source: |
-            docker-compose.production.yml
-            gateway/nginx.conf
-            backend/docs/**
+            ./docker-compose.production.yml
+            ./gateway/nginx.conf
           target: /root/foodgram/
           strip_components: 0
 
