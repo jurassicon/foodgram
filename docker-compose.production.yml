@@ -41,3 +41,4 @@ services:
       - static_volume:/etc/nginx/html/static/
       - media_volume:/etc/nginx/html/media/
       - /etc/letsencrypt:/etc/letsencrypt
+      - /var/www/certbot:/var/www/certbot
