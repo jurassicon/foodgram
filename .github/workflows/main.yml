@@ -37,8 +37,8 @@ jobs:
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
           script: |
-            mkdir -p ~/root/foodgram/gateway
-            mkdir -p ~/root/foodgram/backend/docs
+            mkdir -p /root/foodgram/gateway
+            mkdir -p /root/foodgram/backend/docs
 
       - name: Upload docker-compose and nginx.conf
         uses: appleboy/scp-action@v0.1.7
