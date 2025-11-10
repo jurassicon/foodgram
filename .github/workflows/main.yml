@@ -40,6 +40,20 @@ jobs:
             mkdir -p ~/root/foodgram/gateway
             mkdir -p ~/root/foodgram/backend/docs
 
+      - name: Upload docker-compose and nginx.conf
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          source: |
+            docker-compose.production.yml
+            gateway/nginx.conf
+            backend/docs/**
+          target: /root/foodgram/
+          strip_components: 0
+
   build_and_push_backend:
     name: Build & Push Backend
     runs-on: ubuntu-22.04
