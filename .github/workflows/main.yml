@@ -54,19 +54,40 @@ jobs:
           git status --porcelain
           git ls-files | grep -E 'docker-compose\.production\.yml|gateway/nginx\.conf' || true
 
-
-      - name: Upload docker-compose and nginx.conf
+      - name: Upload docker-compose
         uses: appleboy/scp-action@v0.1.7
         with:
           host: ${{ secrets.HOST }}
           username: ${{ secrets.USER }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          source: |
-            ./docker-compose.production.yml
-            ./gateway/nginx.conf
-          target: /root/foodgram/
+          source: "./docker-compose.production.yml"
+          target: "/root/foodgram/"
           strip_components: 0
+          debug: true
+
+      - name: Upload nginx.conf
+        uses: appleboy/scp-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          source: "./gateway/nginx.conf"
+          target: "/root/foodgram/"
+          strip_components: 0
+          debug: true
+
+      - name: Verify files on server
+        uses: appleboy/ssh-action@v0.1.7
+        with:
+          host: ${{ secrets.HOST }}
+          username: ${{ secrets.USER }}
+          key: ${{ secrets.PRIVATE_KEY }}
+          port: 22
+          script: |
+            ls -al /root/foodgram
+            ls -al /root/foodgram/gateway || true
 
       - name: Upload backend docs (if any)
         if: ${{ hashFiles('backend/docs/**') != '' }}
