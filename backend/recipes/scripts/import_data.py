@@ -5,6 +5,8 @@ import sys
 import django
 import pandas as pd
 
+from recipes.models import Ingredient, Tag
+
 
 def main():
     # настраиваем путь и Django
@@ -13,9 +15,6 @@ def main():
     sys.path.insert(0, project_root)
     os.environ.setdefault('DJANGO_SETTINGS_MODULE', 'config.settings')
     django.setup()
-
-    # теперь безопасно импортируем модели
-    from recipes.models import Ingredient, Tag
 
     data_dir = os.path.join(this_dir, 'csv_data')
     ingredients_csv = os.path.join(data_dir, 'ingredients.csv')
