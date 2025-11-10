@@ -40,20 +40,6 @@ jobs:
             mkdir -p /root/foodgram/gateway
             mkdir -p /root/foodgram/backend/docs
 
-      - name: Debug list files
-        run: |
-          echo "PWD:"; pwd
-          echo "--- root ---"; ls -al
-          echo "--- gateway ---"; ls -al gateway || true
-          echo "--- infra ---"; ls -al infra || true
-          echo "--- find docker-compose.production.yml ---"
-          find . -maxdepth 3 -name "docker-compose.production.yml" -print
-          echo "--- find nginx.conf ---"
-          find . -maxdepth 4 -name "nginx.conf" -print
-          echo "--- git files ---"
-          git status --porcelain
-          git ls-files | grep -E 'docker-compose\.production\.yml|gateway/nginx\.conf' || true
-
       - name: Upload docker-compose
         uses: appleboy/scp-action@v0.1.7
         with:
