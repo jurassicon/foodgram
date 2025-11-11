@@ -83,10 +83,8 @@ jobs:
           username: ${{ secrets.USER }}
           key: ${{ secrets.PRIVATE_KEY }}
           port: 22
-          source: |
-            ./backend/docs/**
-          target: /root/foodgram/backend/docs/
-          strip_components: 1
+          source: "backend/docs/**"
+          target: "/root/foodgram/backend/docs/"
 
   build_and_push_backend:
     name: Build & Push Backend
