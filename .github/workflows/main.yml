@@ -138,24 +138,9 @@ jobs:
           port: 22
           script: |
             cd /root/foodgram
-            cat > .env <<EOF
-            DEBUG=${{ secrets.DEBUG }}
-            SECRET_KEY=${{ secrets.SECRET_KEY }}
-            ALLOWED_HOSTS=${{ secrets.ALLOWED_HOSTS }}
-            CSRF_TRUSTED_ORIGINS=${{ secrets.CSRF_TRUSTED_ORIGINS }}
-            DB_ENGINE=${{ secrets.DB_ENGINE }}
-            DB_NAME=${{ secrets.DB_NAME }}
-            POSTGRES_DB=${{ secrets.POSTGRES_DB }}
-            POSTGRES_USER=${{ secrets.POSTGRES_USER }}
-            POSTGRES_PASSWORD=${{ secrets.POSTGRES_PASSWORD }}
-            DB_HOST=${{ secrets.DB_HOST }}
-            DB_PORT=${{ secrets.DB_PORT }}
-            EOF
-
             sudo docker compose -f docker-compose.production.yml down
             sudo docker compose -f docker-compose.production.yml up -d --remove-orphans
             sudo docker image prune -af
-            rm -f .env
   
 
   notify:
