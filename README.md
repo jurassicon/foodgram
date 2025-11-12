@@ -1,134 +1,143 @@
-# Foodgram — Grocery Assistant
+# Foodgram - Продуктовый помощник
 
-Foodgram is a web application where users share recipes, follow favorite authors, add recipes to favorites, and generate a shopping list for selected recipes with the ability to download it as a single file.
+## Описание проекта
 
-## Demo
+Foodgram - это веб-приложение "Продуктовый помощник", которое позволяет пользователям публиковать рецепты, подписываться на публикации других пользователей, добавлять понравившиеся рецепты в список «Избранное», а также формировать список покупок для выбранных рецептов и скачивать его.
 
-- Production: https://diddly-squat.ru/
-- API root: https://diddly-squat.ru/api/
-- API docs (ReDoc): https://diddly-squat.ru/docs/
+## Технологии
 
-## Tech stack
+- **Бэкенд**: Django, Django REST Framework
+- **Фронтенд**: React
+- **База данных**: PostgreSQL
+- **Контейнеризация**: Docker, docker-compose
+- **Веб-сервер**: Nginx
+- **CI/CD**: GitHub Actions
 
-- Backend: Django, Django REST Framework, Djoser, django-filter
-- Frontend: React (SPA, served by Nginx)
-- Database: PostgreSQL
-- Web server/static: Nginx
-- Containerization: Docker, Docker Compose
-- CI/CD: GitHub Actions (build → push → deploy)
+## Системные требования
 
-## Quick start (Production, Docker Compose)
+- Docker
+- Docker Compose
 
-Requirements:
-- Docker and Docker Compose v2 (plugin)
+## Установка и запуск
 
-1) Clone the repository
-```
-git clone https://github.com/jurassicon/foodgram.git
-cd foodgram
-```
+### Локальная разработка
 
-2) Create a `.env` file in the project root
-Minimal example for docker-compose.production.yml:
-```
-# Django
-SECRET_KEY=<django-secret>
-DEBUG=False
-ALLOWED_HOSTS=localhost 127.0.0.1 your.domain.com
-CSRF_TRUSTED_ORIGINS=https://your.domain.com http://localhost
-FRONTEND_URL=http://localhost
+1. Подготовка сервера:
+   ```
+   sudo apt update
+   sudo apt upgrade -y
+   sudo apt install curl
+   ```
+   ```
+   curl -fSL https://get.docker.com -o get-docker.sh
+   ```
+   ```
+   sudo apt install docker-compose-plugin
+   ```
+2. Клонируйте репозиторий:
+   ```
+   git clone https://github.com/jurassicon/foodgram.git
+   cd foodgram
+   ```
 
-# Postgres (used by Django and the db container)
-POSTGRES_DB=foodgram
-POSTGRES_USER=foodgram
-POSTGRES_PASSWORD=<pg-password>
-DB_HOST=db
-DB_PORT=5432
-```
-Tips:
-- `DB_HOST` must point to the DB service in compose — `db`.
-- `ALLOWED_HOSTS` and `CSRF_TRUSTED_ORIGINS` must include your domain/host.
+3. Создайте файл `.env` в корневой директории проекта со следующими переменными:
+   ```
+   POSTGRES_DB=<db_name>
+   POSTGRES_USER=<some_username>
+   POSTGRES_PASSWORD=<password>
+   DB_NAME=<db_name>
+   DB_HOST=<db_host>
+   DB_PASSWORD=<password>
+   DB_PORT=5432
+   SECRET_KEY="django-insecure-code"
+   DEBUG=False
+   ALLOWED_HOSTS=localhost 000.000.00.00 site.com
+   CSRF_TRUSTED_ORIGINS=https://site.com
+   ```
 
-3) Start the app
-```
-docker compose -f docker-compose.production.yml up -d
-```
+4. Запустите проект с помощью Docker Compose:
+   ```
+   docker-compose -f docker-compose.production.yml up -d
+   ```
 
-4) Initialize the backend (inside the container)
-```
-docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations
-```
-```
-docker compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
-```
-```
-docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
-```
-```
-docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
-```
+5. После запуска проект будет доступен по адресу: http://localhost
 
-5) Load reference data (ingredients/tags)
-```
-docker compose -f docker-compose.production.yml exec backend python recipes/scripts/import_data.py
-```
+### Доступ к API и документации
 
-After startup:
-- Web UI: http://localhost/
-- API: http://localhost/api/
-- API docs: http://localhost/docs/
+- **API**: http://localhost/api/
+- **Документация API**: http://localhost/api/docs/
 
-## Local development
+6. После запуска можно наполнить БД ингридиентами и импортировать теги.
+   ```
+   docker compose -f docker-compose.production.yml exec backend python manage.py makemigrations
+   ```
+   ```
+   docker compose -f docker-compose.production.yml exec backend python manage.py migrate --noinput
+   ```
+   ```
+   docker compose -f docker-compose.production.yml exec backend python manage.py collectstatic --no-input
+   ```
+   ```
+   docker compose -f docker-compose.production.yml exec backend python manage.py createsuperuser
+   ```
+   ```
+   docker compose -f docker-compose.production.yml exec backend python recipes/scripts/import_data.py
+   ```
+## Использование
 
-For local development you can reuse the same compose file or your own environment. The main environment variables remain the same. Useful commands:
-- Restart services: `docker compose -f docker-compose.production.yml restart backend gateway`
-- Tail logs: `docker compose -f docker-compose.production.yml logs -f backend`
+### Регистрация и авторизация
 
-## User scenarios
+Для использования всех возможностей сервиса необходимо зарегистрироваться. После регистрации вы сможете:
 
-- Sign up / sign in via e‑mail (Djoser)
-- Create, edit, and delete your own recipes
-- Browse the recipe feed and author profiles
-- Subscribe to authors
-- Add recipes to favorites
-- Build and download a shopping list (TXT)
+- Создавать, редактировать и удалять собственные рецепты
+- Просматривать рецепты других пользователей
+- Добавлять рецепты в избранное
+- Подписываться на других авторов
+- Формировать список покупок
 
-## Architecture and directories
+### Работа со списком покупок
 
-- `backend/` — Django project (API, business logic)
-- `frontend/` — frontend build (React); mounted into Nginx
-- `gateway/` — Nginx configuration
-- `backend/docs/` — static API documentation (ReDoc)
-- `.github/workflows/` — CI/CD pipelines
+1. Добавьте интересующие вас рецепты в список покупок
+2. Перейдите в раздел "Список покупок"
+3. Нажмите кнопку "Скачать список" для получения TXT-файла с необходимыми ингредиентами
 
-## CI/CD (GitHub Actions)
+## Деплой на сервер
 
-The pipeline runs on push to the `main` branch and includes:
-1. Lint (flake8) for the `backend/` folder.
-2. Copy configs/docs to the server (SSH/SCP).
-3. Build and push Docker images for `backend` and `frontend` to Docker Hub.
-4. Deploy on the server: `docker compose down && docker compose up -d` and prune old images.
+Проект настроен для автоматического деплоя на сервер с использованием GitHub Actions.
 
-Required repository secrets:
-- `HOST` — server IP/domain
-- `USER` — SSH user
-- `PRIVATE_KEY` — SSH private key
-- `DOCKER_USERNAME`, `DOCKER_PASSWORD` — Docker Hub credentials
-- App environment variables (see `.env`), optionally `POSTGRES_DB`, `POSTGRES_USER`, `POSTGRES_PASSWORD`
-- `TELEGRAM_TOKEN`, `TELEGRAM_TO` — for Telegram notifications (optional)
+1. Настройте следующие секреты в вашем GitHub репозитории:
+   - `HOST` - IP-адрес вашего сервера
+   - `USERNAME` - имя пользователя для SSH-подключения
+   - `PRIVATE_KEY` - приватный SSH-ключ
+   - `DOCKER_USER` - имя пользователя Docker Hub
+   - `DOCKER_PASS` - пароль от Docker Hub
+   - Переменные для PostgreSQL
+   - `POSTGRES_DB` - имя БД
+   - `POSTGRES_USER` - имя пользователя БД
+   - `POSTGRES_PASSWORD` - пароль пользователя БД
+   - Все переменные окружения из файла `.env`
+   - `TELEGRAM_TO` и `TELEGRAM_TOKEN` (опционально, для уведомлений)
 
-Note: secret names are aligned with `.github/workflows/main.yml` in this repo.
+2. При пуше в ветку `master` будет запущен процесс CI/CD:
+   - Сборка и публикация образов в Docker Hub
+   - Деплой на сервер
+   - Отправка уведомления в Telegram (если настроено)
 
-## Useful links
+## Структура проекта
 
-- Nginx configuration: `gateway/nginx.conf`
-- Production compose: `docker-compose.production.yml`
-- Django settings: `backend/config/settings.py`
+- `backend/` - Django-приложение (API)
+- `frontend/` - React-приложение
+- `gateway/` - Конфигурация Nginx
+- `backend/docs/` - Документация API
+- `.github/workflows/` - Конфигурация CI/CD
 
-## License
+## Проект доступен по адресу 
+  https://diddly-squat.ru/
 
-MIT License. See `LICENSE` for details.
+## Автор
 
-## Author
+Юрий Черкасов  [GitHub](https://github.com/jurassicon)
 
-Yuri Cherkasov — [Telegram](https://t.me/Iurii_Cherkasov)
+## Лицензия
+
+Этот проект лицензирован под MIT License - подробности см. в файле LICENSE.
