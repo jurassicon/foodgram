@@ -85,6 +85,7 @@ jobs:
           port: 22
           source: "backend/docs/**"
           target: "/root/foodgram/backend/docs/"
+          strip_components: 1
 
   build_and_push_backend:
     name: Build & Push Backend
